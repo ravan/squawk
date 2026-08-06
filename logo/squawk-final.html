@@ -1,0 +1,1336 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Squawk — final mark</title>
+    <style>
+      :root {
+        --bg: #f4f6f9;
+        --card: #fff;
+        --ink: #141a21;
+        --mut: #6b7683;
+        --line: #e2e7ee;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0b0f14;
+          --card: #141b23;
+          --ink: #edf1f6;
+          --mut: #94a0ae;
+          --line: #232d38;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          16px/1.55 ui-sans-serif,
+          -apple-system,
+          'Segoe UI',
+          Inter,
+          Helvetica,
+          Arial,
+          sans-serif;
+        padding: 44px 32px 70px;
+      }
+      .wrap {
+        max-width: 940px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 29px;
+        margin: 0 0 6px;
+        letter-spacing: -0.6px;
+      }
+      header p {
+        margin: 0 0 26px;
+        color: var(--mut);
+        max-width: 66ch;
+      }
+      section {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 24px 26px;
+        margin-bottom: 18px;
+      }
+      h2 {
+        font-size: 12px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--mut);
+        margin: 0 0 16px;
+      }
+      .row {
+        display: flex;
+        gap: 26px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+      }
+      .chip {
+        text-align: center;
+      }
+      .chip span {
+        display: block;
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--mut);
+      }
+      .chip svg {
+        width: 100%;
+        height: 100%;
+      }
+      .band {
+        padding: 22px 24px;
+        border-radius: 12px;
+        display: flex;
+        gap: 26px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .lt {
+        background: #f0f2f6;
+      }
+      .dk {
+        background: #12181f;
+      }
+      .lockup svg {
+        width: 330px;
+        max-width: 100%;
+        height: auto;
+      }
+      p.note {
+        margin: 14px 0 0;
+        color: var(--mut);
+        font-size: 14px;
+      }
+      code {
+        font-size: 12.5px;
+        background: #8881;
+        padding: 2px 6px;
+        border-radius: 5px;
+      }
+      pre {
+        background: #8881;
+        padding: 14px 16px;
+        border-radius: 10px;
+        overflow: auto;
+        font-size: 12.5px;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Squawk — the mark</h1>
+        <p>
+          Mid-squawk: head tilted, eye happily shut, beak open, noise coming
+          out. Two cuts — the full mark for 48&nbsp;px and up, and a simplified
+          one for 16/32&nbsp;px where the squawk lines and blush would only turn
+          to mud.
+        </p>
+      </header>
+
+      <section>
+        <h2>Toolbar icon — full cut (48px +)</h2>
+        <div class="row">
+          <div class="chip">
+            <div style="width: 128px; height: 128px">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 128 128"
+                width="128"
+                height="128"
+                role="img"
+                aria-label="Squawk"
+              >
+                <defs>
+                  <linearGradient id="sqbg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#1D2733" />
+                    <stop offset="1" stop-color="#0D131A" />
+                  </linearGradient>
+                </defs>
+                <rect width="128" height="128" rx="28" fill="url(#sqbg)" />
+
+                <g transform="rotate(-9 58 72)">
+                  <!-- crest: one swept plume, so it never reads as fingers -->
+                  <path
+                    d="M68 56 C67 37 59 21 41 13 C34 10 29 17 34 24 C43 32 47 40 47 48 C39 37 28 30 17 27 C10 25 7 32 13 38 C24 45 31 53 35 62 Z"
+                    fill="#FF8A70"
+                  />
+
+                  <!-- head -->
+                  <circle cx="56" cy="74" r="31" fill="#FF6B57" />
+                  <ellipse
+                    cx="39"
+                    cy="87"
+                    rx="9"
+                    ry="6.5"
+                    fill="#E63F2C"
+                    opacity="0.5"
+                  />
+
+                  <!-- open beak, mid-squawk -->
+                  <path
+                    d="M82 76 C85 70 90 67 97 64 C101 71 100 79 96 85 C90 84 85 81 82 78 Z"
+                    fill="#B5432A"
+                  />
+                  <path
+                    d="M80 66 L102 60 Q105 59.5 104 63 L98 72 Q90 70 79 71 Z"
+                    fill="#FFB020"
+                    stroke="#FFB020"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M80 78 L100 84 Q102.5 85 100 87 L88 90 Q84 84 79 82 Z"
+                    fill="#E89100"
+                    stroke="#E89100"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+
+                  <!-- eye, happily shut -->
+                  <path
+                    d="M60 66 C64 60 70 60 74 66"
+                    fill="none"
+                    stroke="#14202B"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                  />
+                </g>
+
+                <!-- squawk lines -->
+                <g
+                  stroke="#FFB020"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                  opacity="0.9"
+                >
+                  <path d="M110 42 L116 36" />
+                  <path d="M113 60 H121" />
+                  <path d="M110 78 L116 84" />
+                </g>
+              </svg>
+            </div>
+            <span>128px</span>
+          </div>
+          <div class="chip">
+            <div style="width: 96px; height: 96px">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 128 128"
+                width="128"
+                height="128"
+                role="img"
+                aria-label="Squawk"
+              >
+                <defs>
+                  <linearGradient id="sqbg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#1D2733" />
+                    <stop offset="1" stop-color="#0D131A" />
+                  </linearGradient>
+                </defs>
+                <rect width="128" height="128" rx="28" fill="url(#sqbg)" />
+
+                <g transform="rotate(-9 58 72)">
+                  <!-- crest: one swept plume, so it never reads as fingers -->
+                  <path
+                    d="M68 56 C67 37 59 21 41 13 C34 10 29 17 34 24 C43 32 47 40 47 48 C39 37 28 30 17 27 C10 25 7 32 13 38 C24 45 31 53 35 62 Z"
+                    fill="#FF8A70"
+                  />
+
+                  <!-- head -->
+                  <circle cx="56" cy="74" r="31" fill="#FF6B57" />
+                  <ellipse
+                    cx="39"
+                    cy="87"
+                    rx="9"
+                    ry="6.5"
+                    fill="#E63F2C"
+                    opacity="0.5"
+                  />
+
+                  <!-- open beak, mid-squawk -->
+                  <path
+                    d="M82 76 C85 70 90 67 97 64 C101 71 100 79 96 85 C90 84 85 81 82 78 Z"
+                    fill="#B5432A"
+                  />
+                  <path
+                    d="M80 66 L102 60 Q105 59.5 104 63 L98 72 Q90 70 79 71 Z"
+                    fill="#FFB020"
+                    stroke="#FFB020"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M80 78 L100 84 Q102.5 85 100 87 L88 90 Q84 84 79 82 Z"
+                    fill="#E89100"
+                    stroke="#E89100"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+
+                  <!-- eye, happily shut -->
+                  <path
+                    d="M60 66 C64 60 70 60 74 66"
+                    fill="none"
+                    stroke="#14202B"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                  />
+                </g>
+
+                <!-- squawk lines -->
+                <g
+                  stroke="#FFB020"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                  opacity="0.9"
+                >
+                  <path d="M110 42 L116 36" />
+                  <path d="M113 60 H121" />
+                  <path d="M110 78 L116 84" />
+                </g>
+              </svg>
+            </div>
+            <span>96px</span>
+          </div>
+          <div class="chip">
+            <div style="width: 64px; height: 64px">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 128 128"
+                width="128"
+                height="128"
+                role="img"
+                aria-label="Squawk"
+              >
+                <defs>
+                  <linearGradient id="sqbg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#1D2733" />
+                    <stop offset="1" stop-color="#0D131A" />
+                  </linearGradient>
+                </defs>
+                <rect width="128" height="128" rx="28" fill="url(#sqbg)" />
+
+                <g transform="rotate(-9 58 72)">
+                  <!-- crest: one swept plume, so it never reads as fingers -->
+                  <path
+                    d="M68 56 C67 37 59 21 41 13 C34 10 29 17 34 24 C43 32 47 40 47 48 C39 37 28 30 17 27 C10 25 7 32 13 38 C24 45 31 53 35 62 Z"
+                    fill="#FF8A70"
+                  />
+
+                  <!-- head -->
+                  <circle cx="56" cy="74" r="31" fill="#FF6B57" />
+                  <ellipse
+                    cx="39"
+                    cy="87"
+                    rx="9"
+                    ry="6.5"
+                    fill="#E63F2C"
+                    opacity="0.5"
+                  />
+
+                  <!-- open beak, mid-squawk -->
+                  <path
+                    d="M82 76 C85 70 90 67 97 64 C101 71 100 79 96 85 C90 84 85 81 82 78 Z"
+                    fill="#B5432A"
+                  />
+                  <path
+                    d="M80 66 L102 60 Q105 59.5 104 63 L98 72 Q90 70 79 71 Z"
+                    fill="#FFB020"
+                    stroke="#FFB020"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M80 78 L100 84 Q102.5 85 100 87 L88 90 Q84 84 79 82 Z"
+                    fill="#E89100"
+                    stroke="#E89100"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+
+                  <!-- eye, happily shut -->
+                  <path
+                    d="M60 66 C64 60 70 60 74 66"
+                    fill="none"
+                    stroke="#14202B"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                  />
+                </g>
+
+                <!-- squawk lines -->
+                <g
+                  stroke="#FFB020"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                  opacity="0.9"
+                >
+                  <path d="M110 42 L116 36" />
+                  <path d="M113 60 H121" />
+                  <path d="M110 78 L116 84" />
+                </g>
+              </svg>
+            </div>
+            <span>64px</span>
+          </div>
+          <div class="chip">
+            <div style="width: 48px; height: 48px">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 128 128"
+                width="128"
+                height="128"
+                role="img"
+                aria-label="Squawk"
+              >
+                <defs>
+                  <linearGradient id="sqbg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#1D2733" />
+                    <stop offset="1" stop-color="#0D131A" />
+                  </linearGradient>
+                </defs>
+                <rect width="128" height="128" rx="28" fill="url(#sqbg)" />
+
+                <g transform="rotate(-9 58 72)">
+                  <!-- crest: one swept plume, so it never reads as fingers -->
+                  <path
+                    d="M68 56 C67 37 59 21 41 13 C34 10 29 17 34 24 C43 32 47 40 47 48 C39 37 28 30 17 27 C10 25 7 32 13 38 C24 45 31 53 35 62 Z"
+                    fill="#FF8A70"
+                  />
+
+                  <!-- head -->
+                  <circle cx="56" cy="74" r="31" fill="#FF6B57" />
+                  <ellipse
+                    cx="39"
+                    cy="87"
+                    rx="9"
+                    ry="6.5"
+                    fill="#E63F2C"
+                    opacity="0.5"
+                  />
+
+                  <!-- open beak, mid-squawk -->
+                  <path
+                    d="M82 76 C85 70 90 67 97 64 C101 71 100 79 96 85 C90 84 85 81 82 78 Z"
+                    fill="#B5432A"
+                  />
+                  <path
+                    d="M80 66 L102 60 Q105 59.5 104 63 L98 72 Q90 70 79 71 Z"
+                    fill="#FFB020"
+                    stroke="#FFB020"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M80 78 L100 84 Q102.5 85 100 87 L88 90 Q84 84 79 82 Z"
+                    fill="#E89100"
+                    stroke="#E89100"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+
+                  <!-- eye, happily shut -->
+                  <path
+                    d="M60 66 C64 60 70 60 74 66"
+                    fill="none"
+                    stroke="#14202B"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                  />
+                </g>
+
+                <!-- squawk lines -->
+                <g
+                  stroke="#FFB020"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                  opacity="0.9"
+                >
+                  <path d="M110 42 L116 36" />
+                  <path d="M113 60 H121" />
+                  <path d="M110 78 L116 84" />
+                </g>
+              </svg>
+            </div>
+            <span>48px</span>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Toolbar icon — small cut (16 / 32px)</h2>
+        <div class="row">
+          <div class="chip">
+            <div style="width: 48px; height: 48px">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 128 128"
+                width="128"
+                height="128"
+                role="img"
+                aria-label="Squawk"
+              >
+                <!-- Simplified cut for 16px and 32px: no squawk lines, no blush,
+       fatter and wider-spaced crest, larger beak. -->
+                <defs>
+                  <linearGradient id="sqbgs" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#1D2733" />
+                    <stop offset="1" stop-color="#0D131A" />
+                  </linearGradient>
+                </defs>
+                <rect width="128" height="128" rx="28" fill="url(#sqbgs)" />
+
+                <g transform="rotate(-9 58 74)">
+                  <!-- crest -->
+                  <path
+                    d="M68 56 C67 35 58 18 39 9 C31 5 26 13 32 21 C42 30 46 39 46 48 C38 35 26 27 14 24 C7 22 4 30 10 36 C22 44 29 53 33 63 Z"
+                    fill="#FF8A70"
+                  />
+
+                  <!-- head -->
+                  <circle cx="56" cy="76" r="34" fill="#FF6B57" />
+
+                  <!-- open beak -->
+                  <path
+                    d="M80 77 C84 70 90 66 99 63 C104 71 103 81 98 88 C90 86 84 81 80 79 Z"
+                    fill="#B5432A"
+                  />
+                  <path
+                    d="M78 66 L108 57 Q112 56 111 61 L102 74 Q92 70 77 72 Z"
+                    fill="#FFB020"
+                    stroke="#FFB020"
+                    stroke-width="4"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M78 80 L106 88 Q109 89 106 92 L92 95 Q86 87 77 84 Z"
+                    fill="#E89100"
+                    stroke="#E89100"
+                    stroke-width="4"
+                    stroke-linejoin="round"
+                  />
+
+                  <!-- eye -->
+                  <path
+                    d="M58 66 C63 59 70 59 75 66"
+                    fill="none"
+                    stroke="#14202B"
+                    stroke-width="9"
+                    stroke-linecap="round"
+                  />
+                </g>
+              </svg>
+            </div>
+            <span>48px</span>
+          </div>
+          <div class="chip">
+            <div style="width: 32px; height: 32px">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 128 128"
+                width="128"
+                height="128"
+                role="img"
+                aria-label="Squawk"
+              >
+                <!-- Simplified cut for 16px and 32px: no squawk lines, no blush,
+       fatter and wider-spaced crest, larger beak. -->
+                <defs>
+                  <linearGradient id="sqbgs" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#1D2733" />
+                    <stop offset="1" stop-color="#0D131A" />
+                  </linearGradient>
+                </defs>
+                <rect width="128" height="128" rx="28" fill="url(#sqbgs)" />
+
+                <g transform="rotate(-9 58 74)">
+                  <!-- crest -->
+                  <path
+                    d="M68 56 C67 35 58 18 39 9 C31 5 26 13 32 21 C42 30 46 39 46 48 C38 35 26 27 14 24 C7 22 4 30 10 36 C22 44 29 53 33 63 Z"
+                    fill="#FF8A70"
+                  />
+
+                  <!-- head -->
+                  <circle cx="56" cy="76" r="34" fill="#FF6B57" />
+
+                  <!-- open beak -->
+                  <path
+                    d="M80 77 C84 70 90 66 99 63 C104 71 103 81 98 88 C90 86 84 81 80 79 Z"
+                    fill="#B5432A"
+                  />
+                  <path
+                    d="M78 66 L108 57 Q112 56 111 61 L102 74 Q92 70 77 72 Z"
+                    fill="#FFB020"
+                    stroke="#FFB020"
+                    stroke-width="4"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M78 80 L106 88 Q109 89 106 92 L92 95 Q86 87 77 84 Z"
+                    fill="#E89100"
+                    stroke="#E89100"
+                    stroke-width="4"
+                    stroke-linejoin="round"
+                  />
+
+                  <!-- eye -->
+                  <path
+                    d="M58 66 C63 59 70 59 75 66"
+                    fill="none"
+                    stroke="#14202B"
+                    stroke-width="9"
+                    stroke-linecap="round"
+                  />
+                </g>
+              </svg>
+            </div>
+            <span>32px</span>
+          </div>
+          <div class="chip">
+            <div style="width: 16px; height: 16px">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 128 128"
+                width="128"
+                height="128"
+                role="img"
+                aria-label="Squawk"
+              >
+                <!-- Simplified cut for 16px and 32px: no squawk lines, no blush,
+       fatter and wider-spaced crest, larger beak. -->
+                <defs>
+                  <linearGradient id="sqbgs" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#1D2733" />
+                    <stop offset="1" stop-color="#0D131A" />
+                  </linearGradient>
+                </defs>
+                <rect width="128" height="128" rx="28" fill="url(#sqbgs)" />
+
+                <g transform="rotate(-9 58 74)">
+                  <!-- crest -->
+                  <path
+                    d="M68 56 C67 35 58 18 39 9 C31 5 26 13 32 21 C42 30 46 39 46 48 C38 35 26 27 14 24 C7 22 4 30 10 36 C22 44 29 53 33 63 Z"
+                    fill="#FF8A70"
+                  />
+
+                  <!-- head -->
+                  <circle cx="56" cy="76" r="34" fill="#FF6B57" />
+
+                  <!-- open beak -->
+                  <path
+                    d="M80 77 C84 70 90 66 99 63 C104 71 103 81 98 88 C90 86 84 81 80 79 Z"
+                    fill="#B5432A"
+                  />
+                  <path
+                    d="M78 66 L108 57 Q112 56 111 61 L102 74 Q92 70 77 72 Z"
+                    fill="#FFB020"
+                    stroke="#FFB020"
+                    stroke-width="4"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M78 80 L106 88 Q109 89 106 92 L92 95 Q86 87 77 84 Z"
+                    fill="#E89100"
+                    stroke="#E89100"
+                    stroke-width="4"
+                    stroke-linejoin="round"
+                  />
+
+                  <!-- eye -->
+                  <path
+                    d="M58 66 C63 59 70 59 75 66"
+                    fill="none"
+                    stroke="#14202B"
+                    stroke-width="9"
+                    stroke-linecap="round"
+                  />
+                </g>
+              </svg>
+            </div>
+            <span>16px</span>
+          </div>
+        </div>
+        <p class="note">
+          Crest simplified to a single swept plume, squawk lines and blush
+          dropped, beak enlarged. Same bird, fewer pixels asked to do impossible
+          things.
+        </p>
+      </section>
+
+      <section>
+        <h2>Glyph — no badge</h2>
+        <div class="band lt" style="margin-bottom: 10px">
+          <div style="width: 88px; height: 88px">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 128 128"
+              width="128"
+              height="128"
+              role="img"
+              aria-label="Squawk"
+            >
+              <!-- Transparent glyph: no badge. For README headers, docs and light or dark backgrounds. -->
+              <g transform="translate(-14,-6) scale(1.2)">
+                <g transform="rotate(-9 58 72)">
+                  <!-- crest: one swept plume, so it never reads as fingers -->
+                  <path
+                    d="M68 56 C67 37 59 21 41 13 C34 10 29 17 34 24 C43 32 47 40 47 48 C39 37 28 30 17 27 C10 25 7 32 13 38 C24 45 31 53 35 62 Z"
+                    fill="#FF8A70"
+                  />
+
+                  <!-- head -->
+                  <circle cx="56" cy="74" r="31" fill="#FF6B57" />
+                  <ellipse
+                    cx="39"
+                    cy="87"
+                    rx="9"
+                    ry="6.5"
+                    fill="#E63F2C"
+                    opacity="0.5"
+                  />
+
+                  <!-- open beak, mid-squawk -->
+                  <path
+                    d="M82 76 C85 70 90 67 97 64 C101 71 100 79 96 85 C90 84 85 81 82 78 Z"
+                    fill="#B5432A"
+                  />
+                  <path
+                    d="M80 66 L102 60 Q105 59.5 104 63 L98 72 Q90 70 79 71 Z"
+                    fill="#FFB020"
+                    stroke="#FFB020"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M80 78 L100 84 Q102.5 85 100 87 L88 90 Q84 84 79 82 Z"
+                    fill="#E89100"
+                    stroke="#E89100"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+
+                  <!-- eye, happily shut -->
+                  <path
+                    d="M60 66 C64 60 70 60 74 66"
+                    fill="none"
+                    stroke="#14202B"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                  />
+                </g>
+
+                <!-- squawk lines -->
+                <g
+                  stroke="#FFB020"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                  opacity="0.9"
+                >
+                  <path d="M110 42 L116 36" />
+                  <path d="M113 60 H121" />
+                  <path d="M110 78 L116 84" />
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div style="width: 48px; height: 48px">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 128 128"
+              width="128"
+              height="128"
+              role="img"
+              aria-label="Squawk"
+            >
+              <!-- Transparent glyph: no badge. For README headers, docs and light or dark backgrounds. -->
+              <g transform="translate(-14,-6) scale(1.2)">
+                <g transform="rotate(-9 58 72)">
+                  <!-- crest: one swept plume, so it never reads as fingers -->
+                  <path
+                    d="M68 56 C67 37 59 21 41 13 C34 10 29 17 34 24 C43 32 47 40 47 48 C39 37 28 30 17 27 C10 25 7 32 13 38 C24 45 31 53 35 62 Z"
+                    fill="#FF8A70"
+                  />
+
+                  <!-- head -->
+                  <circle cx="56" cy="74" r="31" fill="#FF6B57" />
+                  <ellipse
+                    cx="39"
+                    cy="87"
+                    rx="9"
+                    ry="6.5"
+                    fill="#E63F2C"
+                    opacity="0.5"
+                  />
+
+                  <!-- open beak, mid-squawk -->
+                  <path
+                    d="M82 76 C85 70 90 67 97 64 C101 71 100 79 96 85 C90 84 85 81 82 78 Z"
+                    fill="#B5432A"
+                  />
+                  <path
+                    d="M80 66 L102 60 Q105 59.5 104 63 L98 72 Q90 70 79 71 Z"
+                    fill="#FFB020"
+                    stroke="#FFB020"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M80 78 L100 84 Q102.5 85 100 87 L88 90 Q84 84 79 82 Z"
+                    fill="#E89100"
+                    stroke="#E89100"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+
+                  <!-- eye, happily shut -->
+                  <path
+                    d="M60 66 C64 60 70 60 74 66"
+                    fill="none"
+                    stroke="#14202B"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                  />
+                </g>
+
+                <!-- squawk lines -->
+                <g
+                  stroke="#FFB020"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                  opacity="0.9"
+                >
+                  <path d="M110 42 L116 36" />
+                  <path d="M113 60 H121" />
+                  <path d="M110 78 L116 84" />
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div style="width: 28px; height: 28px">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 128 128"
+              width="128"
+              height="128"
+              role="img"
+              aria-label="Squawk"
+            >
+              <!-- Transparent glyph: no badge. For README headers, docs and light or dark backgrounds. -->
+              <g transform="translate(-14,-6) scale(1.2)">
+                <g transform="rotate(-9 58 72)">
+                  <!-- crest: one swept plume, so it never reads as fingers -->
+                  <path
+                    d="M68 56 C67 37 59 21 41 13 C34 10 29 17 34 24 C43 32 47 40 47 48 C39 37 28 30 17 27 C10 25 7 32 13 38 C24 45 31 53 35 62 Z"
+                    fill="#FF8A70"
+                  />
+
+                  <!-- head -->
+                  <circle cx="56" cy="74" r="31" fill="#FF6B57" />
+                  <ellipse
+                    cx="39"
+                    cy="87"
+                    rx="9"
+                    ry="6.5"
+                    fill="#E63F2C"
+                    opacity="0.5"
+                  />
+
+                  <!-- open beak, mid-squawk -->
+                  <path
+                    d="M82 76 C85 70 90 67 97 64 C101 71 100 79 96 85 C90 84 85 81 82 78 Z"
+                    fill="#B5432A"
+                  />
+                  <path
+                    d="M80 66 L102 60 Q105 59.5 104 63 L98 72 Q90 70 79 71 Z"
+                    fill="#FFB020"
+                    stroke="#FFB020"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M80 78 L100 84 Q102.5 85 100 87 L88 90 Q84 84 79 82 Z"
+                    fill="#E89100"
+                    stroke="#E89100"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+
+                  <!-- eye, happily shut -->
+                  <path
+                    d="M60 66 C64 60 70 60 74 66"
+                    fill="none"
+                    stroke="#14202B"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                  />
+                </g>
+
+                <!-- squawk lines -->
+                <g
+                  stroke="#FFB020"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                  opacity="0.9"
+                >
+                  <path d="M110 42 L116 36" />
+                  <path d="M113 60 H121" />
+                  <path d="M110 78 L116 84" />
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="band dk">
+          <div style="width: 88px; height: 88px">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 128 128"
+              width="128"
+              height="128"
+              role="img"
+              aria-label="Squawk"
+            >
+              <!-- Transparent glyph: no badge. For README headers, docs and light or dark backgrounds. -->
+              <g transform="translate(-14,-6) scale(1.2)">
+                <g transform="rotate(-9 58 72)">
+                  <!-- crest: one swept plume, so it never reads as fingers -->
+                  <path
+                    d="M68 56 C67 37 59 21 41 13 C34 10 29 17 34 24 C43 32 47 40 47 48 C39 37 28 30 17 27 C10 25 7 32 13 38 C24 45 31 53 35 62 Z"
+                    fill="#FF8A70"
+                  />
+
+                  <!-- head -->
+                  <circle cx="56" cy="74" r="31" fill="#FF6B57" />
+                  <ellipse
+                    cx="39"
+                    cy="87"
+                    rx="9"
+                    ry="6.5"
+                    fill="#E63F2C"
+                    opacity="0.5"
+                  />
+
+                  <!-- open beak, mid-squawk -->
+                  <path
+                    d="M82 76 C85 70 90 67 97 64 C101 71 100 79 96 85 C90 84 85 81 82 78 Z"
+                    fill="#B5432A"
+                  />
+                  <path
+                    d="M80 66 L102 60 Q105 59.5 104 63 L98 72 Q90 70 79 71 Z"
+                    fill="#FFB020"
+                    stroke="#FFB020"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M80 78 L100 84 Q102.5 85 100 87 L88 90 Q84 84 79 82 Z"
+                    fill="#E89100"
+                    stroke="#E89100"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+
+                  <!-- eye, happily shut -->
+                  <path
+                    d="M60 66 C64 60 70 60 74 66"
+                    fill="none"
+                    stroke="#14202B"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                  />
+                </g>
+
+                <!-- squawk lines -->
+                <g
+                  stroke="#FFB020"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                  opacity="0.9"
+                >
+                  <path d="M110 42 L116 36" />
+                  <path d="M113 60 H121" />
+                  <path d="M110 78 L116 84" />
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div style="width: 48px; height: 48px">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 128 128"
+              width="128"
+              height="128"
+              role="img"
+              aria-label="Squawk"
+            >
+              <!-- Transparent glyph: no badge. For README headers, docs and light or dark backgrounds. -->
+              <g transform="translate(-14,-6) scale(1.2)">
+                <g transform="rotate(-9 58 72)">
+                  <!-- crest: one swept plume, so it never reads as fingers -->
+                  <path
+                    d="M68 56 C67 37 59 21 41 13 C34 10 29 17 34 24 C43 32 47 40 47 48 C39 37 28 30 17 27 C10 25 7 32 13 38 C24 45 31 53 35 62 Z"
+                    fill="#FF8A70"
+                  />
+
+                  <!-- head -->
+                  <circle cx="56" cy="74" r="31" fill="#FF6B57" />
+                  <ellipse
+                    cx="39"
+                    cy="87"
+                    rx="9"
+                    ry="6.5"
+                    fill="#E63F2C"
+                    opacity="0.5"
+                  />
+
+                  <!-- open beak, mid-squawk -->
+                  <path
+                    d="M82 76 C85 70 90 67 97 64 C101 71 100 79 96 85 C90 84 85 81 82 78 Z"
+                    fill="#B5432A"
+                  />
+                  <path
+                    d="M80 66 L102 60 Q105 59.5 104 63 L98 72 Q90 70 79 71 Z"
+                    fill="#FFB020"
+                    stroke="#FFB020"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M80 78 L100 84 Q102.5 85 100 87 L88 90 Q84 84 79 82 Z"
+                    fill="#E89100"
+                    stroke="#E89100"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+
+                  <!-- eye, happily shut -->
+                  <path
+                    d="M60 66 C64 60 70 60 74 66"
+                    fill="none"
+                    stroke="#14202B"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                  />
+                </g>
+
+                <!-- squawk lines -->
+                <g
+                  stroke="#FFB020"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                  opacity="0.9"
+                >
+                  <path d="M110 42 L116 36" />
+                  <path d="M113 60 H121" />
+                  <path d="M110 78 L116 84" />
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div style="width: 28px; height: 28px">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 128 128"
+              width="128"
+              height="128"
+              role="img"
+              aria-label="Squawk"
+            >
+              <!-- Transparent glyph: no badge. For README headers, docs and light or dark backgrounds. -->
+              <g transform="translate(-14,-6) scale(1.2)">
+                <g transform="rotate(-9 58 72)">
+                  <!-- crest: one swept plume, so it never reads as fingers -->
+                  <path
+                    d="M68 56 C67 37 59 21 41 13 C34 10 29 17 34 24 C43 32 47 40 47 48 C39 37 28 30 17 27 C10 25 7 32 13 38 C24 45 31 53 35 62 Z"
+                    fill="#FF8A70"
+                  />
+
+                  <!-- head -->
+                  <circle cx="56" cy="74" r="31" fill="#FF6B57" />
+                  <ellipse
+                    cx="39"
+                    cy="87"
+                    rx="9"
+                    ry="6.5"
+                    fill="#E63F2C"
+                    opacity="0.5"
+                  />
+
+                  <!-- open beak, mid-squawk -->
+                  <path
+                    d="M82 76 C85 70 90 67 97 64 C101 71 100 79 96 85 C90 84 85 81 82 78 Z"
+                    fill="#B5432A"
+                  />
+                  <path
+                    d="M80 66 L102 60 Q105 59.5 104 63 L98 72 Q90 70 79 71 Z"
+                    fill="#FFB020"
+                    stroke="#FFB020"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M80 78 L100 84 Q102.5 85 100 87 L88 90 Q84 84 79 82 Z"
+                    fill="#E89100"
+                    stroke="#E89100"
+                    stroke-width="3"
+                    stroke-linejoin="round"
+                  />
+
+                  <!-- eye, happily shut -->
+                  <path
+                    d="M60 66 C64 60 70 60 74 66"
+                    fill="none"
+                    stroke="#14202B"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                  />
+                </g>
+
+                <!-- squawk lines -->
+                <g
+                  stroke="#FFB020"
+                  stroke-width="6"
+                  stroke-linecap="round"
+                  opacity="0.9"
+                >
+                  <path d="M110 42 L116 36" />
+                  <path d="M113 60 H121" />
+                  <path d="M110 78 L116 84" />
+                </g>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <p class="note">For the README header, docs and the demo GIF.</p>
+      </section>
+
+      <section>
+        <h2>Lockup</h2>
+        <div class="band lt lockup" style="margin-bottom: 10px">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 470 128"
+            width="470"
+            height="128"
+            role="img"
+            aria-label="Squawk"
+          >
+            <g transform="translate(-10,-4) scale(1.14)">
+              <g transform="rotate(-9 58 72)">
+                <!-- crest: one swept plume, so it never reads as fingers -->
+                <path
+                  d="M68 56 C67 37 59 21 41 13 C34 10 29 17 34 24 C43 32 47 40 47 48 C39 37 28 30 17 27 C10 25 7 32 13 38 C24 45 31 53 35 62 Z"
+                  fill="#FF8A70"
+                />
+
+                <!-- head -->
+                <circle cx="56" cy="74" r="31" fill="#FF6B57" />
+                <ellipse
+                  cx="39"
+                  cy="87"
+                  rx="9"
+                  ry="6.5"
+                  fill="#E63F2C"
+                  opacity="0.5"
+                />
+
+                <!-- open beak, mid-squawk -->
+                <path
+                  d="M82 76 C85 70 90 67 97 64 C101 71 100 79 96 85 C90 84 85 81 82 78 Z"
+                  fill="#B5432A"
+                />
+                <path
+                  d="M80 66 L102 60 Q105 59.5 104 63 L98 72 Q90 70 79 71 Z"
+                  fill="#FFB020"
+                  stroke="#FFB020"
+                  stroke-width="3"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M80 78 L100 84 Q102.5 85 100 87 L88 90 Q84 84 79 82 Z"
+                  fill="#E89100"
+                  stroke="#E89100"
+                  stroke-width="3"
+                  stroke-linejoin="round"
+                />
+
+                <!-- eye, happily shut -->
+                <path
+                  d="M60 66 C64 60 70 60 74 66"
+                  fill="none"
+                  stroke="#14202B"
+                  stroke-width="7"
+                  stroke-linecap="round"
+                />
+              </g>
+
+              <!-- squawk lines -->
+              <g
+                stroke="#FFB020"
+                stroke-width="6"
+                stroke-linecap="round"
+                opacity="0.9"
+              >
+                <path d="M110 42 L116 36" />
+                <path d="M113 60 H121" />
+                <path d="M110 78 L116 84" />
+              </g>
+            </g>
+            <text
+              x="152"
+              y="78"
+              font-family="'Inter Tight','Inter','Helvetica Neue',Helvetica,Arial,sans-serif"
+              font-size="54"
+              font-weight="700"
+              letter-spacing="-1.5"
+              fill="#12181F"
+            >
+              Squawk
+            </text>
+            <text
+              x="154"
+              y="100"
+              font-family="'JetBrains Mono','SF Mono',ui-monospace,Menlo,monospace"
+              font-size="14"
+              letter-spacing="3.4"
+              fill="#8A93A0"
+            >
+              MARK IT. SHOOT IT. SHIP IT.
+            </text>
+          </svg>
+        </div>
+        <div class="band dk lockup">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 470 128"
+            width="470"
+            height="128"
+            role="img"
+            aria-label="Squawk"
+          >
+            <g transform="translate(-10,-4) scale(1.14)">
+              <g transform="rotate(-9 58 72)">
+                <!-- crest: one swept plume, so it never reads as fingers -->
+                <path
+                  d="M68 56 C67 37 59 21 41 13 C34 10 29 17 34 24 C43 32 47 40 47 48 C39 37 28 30 17 27 C10 25 7 32 13 38 C24 45 31 53 35 62 Z"
+                  fill="#FF8A70"
+                />
+
+                <!-- head -->
+                <circle cx="56" cy="74" r="31" fill="#FF6B57" />
+                <ellipse
+                  cx="39"
+                  cy="87"
+                  rx="9"
+                  ry="6.5"
+                  fill="#E63F2C"
+                  opacity="0.5"
+                />
+
+                <!-- open beak, mid-squawk -->
+                <path
+                  d="M82 76 C85 70 90 67 97 64 C101 71 100 79 96 85 C90 84 85 81 82 78 Z"
+                  fill="#B5432A"
+                />
+                <path
+                  d="M80 66 L102 60 Q105 59.5 104 63 L98 72 Q90 70 79 71 Z"
+                  fill="#FFB020"
+                  stroke="#FFB020"
+                  stroke-width="3"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M80 78 L100 84 Q102.5 85 100 87 L88 90 Q84 84 79 82 Z"
+                  fill="#E89100"
+                  stroke="#E89100"
+                  stroke-width="3"
+                  stroke-linejoin="round"
+                />
+
+                <!-- eye, happily shut -->
+                <path
+                  d="M60 66 C64 60 70 60 74 66"
+                  fill="none"
+                  stroke="#14202B"
+                  stroke-width="7"
+                  stroke-linecap="round"
+                />
+              </g>
+
+              <!-- squawk lines -->
+              <g
+                stroke="#FFB020"
+                stroke-width="6"
+                stroke-linecap="round"
+                opacity="0.9"
+              >
+                <path d="M110 42 L116 36" />
+                <path d="M113 60 H121" />
+                <path d="M110 78 L116 84" />
+              </g>
+            </g>
+            <text
+              x="152"
+              y="78"
+              font-family="'Inter Tight','Inter','Helvetica Neue',Helvetica,Arial,sans-serif"
+              font-size="54"
+              font-weight="700"
+              letter-spacing="-1.5"
+              fill="#F2F5F9"
+            >
+              Squawk
+            </text>
+            <text
+              x="154"
+              y="100"
+              font-family="'JetBrains Mono','SF Mono',ui-monospace,Menlo,monospace"
+              font-size="14"
+              letter-spacing="3.4"
+              fill="#98A3B1"
+            >
+              MARK IT. SHOOT IT. SHIP IT.
+            </text>
+          </svg>
+        </div>
+        <p class="note">
+          Tagline is a placeholder — swap or drop it. The wordmark uses a system
+          font stack; say the word and I'll outline the letterforms so it
+          renders identically everywhere.
+        </p>
+      </section>
+
+      <section>
+        <h2>Dropping it into the extension</h2>
+        <pre>
+public/icon/16.png    ← small cut
+public/icon/32.png    ← small cut
+public/icon/48.png    ← full cut
+public/icon/128.png   ← full cut</pre>
+        <p class="note">
+          WXT picks up <code>public/icon/*.png</code> automatically, so
+          <code>wxt.config.ts</code> needs no <code>icons</code> block.
+        </p>
+      </section>
+
+      <section>
+        <h2>Palette</h2>
+        <p class="note">
+          coral <code>#FF6B57</code> · crest <code>#FF8A70</code> · blush
+          <code>#E63F2C</code> · beak <code>#FFB020</code> /
+          <code>#E89100</code> · mouth <code>#B5432A</code> · eye + ground
+          <code>#14202B</code> / <code>#1D2733</code>→<code>#0D131A</code>
+        </p>
+      </section>
+    </div>
+  </body>
+</html>

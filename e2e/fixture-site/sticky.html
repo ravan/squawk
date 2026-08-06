@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sticky Operations Board</title>
+    <style>
+      :root {
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        color: #1f2937;
+        background: #f1f5f9;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      .topbar {
+        position: sticky;
+        z-index: 20;
+        top: 0;
+        height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 32px;
+        border-bottom: 1px solid #cbd5e1;
+        background: #ffffff;
+        box-shadow: 0 4px 16px #0f172a14;
+      }
+
+      .topbar strong {
+        color: #0f172a;
+        font-size: 1.15rem;
+      }
+
+      .topbar span {
+        color: #1971c2;
+        font-weight: 700;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr);
+        gap: 32px;
+        width: min(1180px, calc(100% - 48px));
+        margin: 0 auto;
+        padding: 32px 0 80px;
+      }
+
+      .rail {
+        position: sticky;
+        top: 96px;
+        align-self: start;
+        display: grid;
+        gap: 12px;
+        padding: 20px;
+        border: 1px solid #dbe4ee;
+        border-radius: 14px;
+        background: #ffffff;
+      }
+
+      .rail a {
+        color: #475569;
+        font-weight: 650;
+        text-decoration: none;
+      }
+
+      main {
+        min-width: 0;
+      }
+
+      .hero {
+        min-height: 82vh;
+        display: grid;
+        align-content: center;
+        padding: 48px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #0f172a, #1e3a5f);
+        color: #e2e8f0;
+      }
+
+      .hero h1 {
+        max-width: 680px;
+        margin: 0 0 20px;
+        font-size: clamp(2.8rem, 6vw, 5rem);
+        line-height: 0.98;
+      }
+
+      .hero p {
+        max-width: 620px;
+        margin: 0;
+        color: #bfdbfe;
+        font-size: 1.12rem;
+        line-height: 1.7;
+      }
+
+      .section {
+        min-height: 92vh;
+        padding: 80px 12px;
+      }
+
+      .section h2 {
+        margin: 0 0 18px;
+        color: #0f172a;
+        font-size: 2rem;
+      }
+
+      .section p {
+        max-width: 680px;
+        color: #64748b;
+        line-height: 1.8;
+      }
+
+      #sticky-target {
+        width: min(680px, 100%);
+        margin-top: 48px;
+        padding: 36px;
+        border: 1px solid #93c5fd;
+        border-radius: 18px;
+        background: #ffffff;
+        box-shadow: 0 22px 55px #0f172a1f;
+      }
+
+      #sticky-target h3 {
+        margin: 0 0 12px;
+        color: #0f172a;
+        font-size: 1.4rem;
+      }
+
+      #sticky-target p {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <strong>Operations Board</strong>
+      <span>All systems stable</span>
+    </header>
+    <div class="layout">
+      <nav class="rail" aria-label="Board sections">
+        <a href="#overview">Overview</a>
+        <a href="#activity">Activity</a>
+        <a href="#review">Review target</a>
+      </nav>
+      <main>
+        <section id="overview" class="hero">
+          <h1>A sticky shell with a long working surface.</h1>
+          <p>
+            The fixed reading aids remain visible while the review target moves
+            through document space below them.
+          </p>
+        </section>
+        <section id="activity" class="section">
+          <h2>Recent activity</h2>
+          <p>
+            This intentionally tall section moves the document beyond both the
+            top header and side rail before Squawk is mounted.
+          </p>
+        </section>
+        <section id="review" class="section">
+          <h2>Lower review queue</h2>
+          <p>
+            The stable card below is the annotation target for erase, undo, and
+            download-fallback evidence.
+          </p>
+          <article id="sticky-target">
+            <h3>Confirm deployment window</h3>
+            <p>
+              Validate the release notes and attach the annotated viewport to
+              the change record before the maintenance window opens.
+            </p>
+          </article>
+        </section>
+        <section class="section">
+          <h2>Archive</h2>
+          <p>
+            Additional deterministic height keeps the lower card away from the
+            document edge and exercises scrolling beyond the target.
+          </p>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

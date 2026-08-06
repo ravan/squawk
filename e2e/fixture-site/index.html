@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Squawk fixture</title>
+    <style>
+      body {
+        margin: 32px;
+        background: #c0ffee;
+        font-family: system-ui, sans-serif;
+      }
+
+      .targets {
+        display: grid;
+        grid-template-columns: repeat(3, 180px);
+        gap: 48px;
+        margin-top: 40px;
+      }
+
+      .target {
+        display: grid;
+        place-items: center;
+        height: 120px;
+        border: 2px solid #adb5bd;
+        border-radius: 12px;
+        background: #f8f9fa;
+      }
+
+      .spacer {
+        height: 1200px;
+      }
+
+      #capture-target {
+        margin-left: 73px;
+        transform: translateY(11px) rotate(-2deg);
+      }
+
+      #destination {
+        padding: 48px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Squawk fixture</h1>
+    <button type="button">Increment</button>
+    <output role="status">0</output>
+    <nav><a class="nav-link" href="#destination">Jump to destination</a></nav>
+    <!-- Absolutely positioned: shifting the flow layout moves the iframe into
+         the palette-drag path other specs sweep through. -->
+    <p id="svelte-target" style="position: absolute; top: 8px; right: 32px">
+      Svelte target
+    </p>
+    <button id="capture-target" type="button">Misaligned capture target</button>
+    <main>
+      <div class="targets">
+        <div class="target" id="target-red">Red target</div>
+        <div class="target" id="target-green">Green target</div>
+        <div class="target" id="target-blue">Blue target</div>
+      </div>
+      <iframe
+        id="picker-frame"
+        src="http://localhost:4173/picker-frame.html"
+        title="Picker frame"
+      ></iframe>
+      <div class="spacer" aria-hidden="true"></div>
+      <h2 id="destination">Destination</h2>
+    </main>
+    <script>
+      const button = document.querySelector('button');
+      const output = document.querySelector('output');
+      button.addEventListener('click', () => {
+        output.value = String(Number(output.value) + 1);
+      });
+      // Mimics Svelte's dev-mode runtime, which stamps source locations onto
+      // DOM elements in the MAIN world for the svelte-loc bridge to read.
+      document.getElementById('svelte-target').__svelte_meta = {
+        loc: { file: 'src/lib/SvelteTarget.svelte', line: 12, column: 4 },
+      };
+    </script>
+  </body>
+</html>

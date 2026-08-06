@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Squawk">
+  <!-- Simplified cut for 16px and 32px: no squawk lines, no blush,
+       fatter and wider-spaced crest, larger beak. -->
+  <defs>
+    <linearGradient id="sqbgs" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1D2733"/><stop offset="1" stop-color="#0D131A"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#sqbgs)"/>
+
+  <g transform="rotate(-9 58 74)">
+    <!-- crest -->
+    <path d="M68 56 C67 35 58 18 39 9 C31 5 26 13 32 21 C42 30 46 39 46 48 C38 35 26 27 14 24 C7 22 4 30 10 36 C22 44 29 53 33 63 Z"
+          fill="#FF8A70"/>
+
+    <!-- head -->
+    <circle cx="56" cy="76" r="34" fill="#FF6B57"/>
+
+    <!-- open beak -->
+    <path d="M80 77 C84 70 90 66 99 63 C104 71 103 81 98 88 C90 86 84 81 80 79 Z" fill="#B5432A"/>
+    <path d="M78 66 L108 57 Q112 56 111 61 L102 74 Q92 70 77 72 Z"
+          fill="#FFB020" stroke="#FFB020" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M78 80 L106 88 Q109 89 106 92 L92 95 Q86 87 77 84 Z"
+          fill="#E89100" stroke="#E89100" stroke-width="4" stroke-linejoin="round"/>
+
+    <!-- eye -->
+    <path d="M58 66 C63 59 70 59 75 66" fill="none"
+          stroke="#14202B" stroke-width="9" stroke-linecap="round"/>
+  </g>
+</svg>

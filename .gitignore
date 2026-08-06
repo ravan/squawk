@@ -1,0 +1,13 @@
+/.hats
+/docs/plans
+/docs/*-spec.md
+/docs/adr
+/node_modules
+/.wxt
+/.output
+/test-results
+/playwright-report
+/blob-report
+/baton.json
+/.baton.lock
+/docs/specs

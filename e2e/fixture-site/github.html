@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Squawk GitHub fixture</title>
+    <link rel="icon" href="data:," />
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: #1f2328;
+        background: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      .site-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        min-height: 64px;
+        padding: 12px 28px;
+        background: #25292e;
+        color: #ffffff;
+      }
+
+      .site-header a {
+        color: #ffffff;
+        cursor: pointer;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .repository-header,
+      .repository-layout {
+        width: min(1120px, calc(100% - 48px));
+        margin-inline: auto;
+      }
+
+      .repository-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 28px 0 18px;
+      }
+
+      .repository-header h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+
+      .star-control {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      button {
+        min-height: 34px;
+        padding: 6px 14px;
+        border: 1px solid #d0d7de;
+        border-radius: 6px;
+        background: #f6f8fa;
+        color: #1f2328;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .repository-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 280px;
+        gap: 24px;
+      }
+
+      .panel {
+        border: 1px solid #d0d7de;
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      .issue-card {
+        padding: 22px;
+        background: #f6f8fa;
+      }
+
+      .issue-card h2 {
+        margin: 0 0 8px;
+        font-size: 20px;
+      }
+
+      .issue-card p {
+        margin: 0;
+        color: #59636e;
+      }
+
+      .merge-panel {
+        display: grid;
+        gap: 14px;
+        align-content: start;
+        padding: 18px;
+      }
+
+      #merge-button {
+        background: #1f883d;
+        border-color: #1f883d;
+        color: #ffffff;
+      }
+
+      .files {
+        grid-column: 1 / -1;
+        overflow: hidden;
+      }
+
+      .file-row {
+        display: grid;
+        grid-template-columns: 1fr 2fr auto;
+        gap: 18px;
+        padding: 12px 16px;
+        border-top: 1px solid #d8dee4;
+      }
+
+      .file-row:first-child {
+        border-top: 0;
+      }
+
+      .muted {
+        color: #59636e;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <strong>Octoforge</strong>
+      <a href="#repository">Repositories</a>
+      <span>Issues</span>
+      <span>Pull requests</span>
+    </header>
+    <main id="repository">
+      <section class="repository-header" aria-labelledby="repository-name">
+        <h1 id="repository-name">
+          <a class="repository-link" href="#files">squawk repository</a>
+        </h1>
+        <div class="star-control">
+          <button id="star-button" type="button">Star repository</button>
+          <output id="star-count" for="star-button">0</output>
+        </div>
+      </section>
+      <div class="repository-layout">
+        <article class="panel issue-card" id="issue-42">
+          <h2>Issue #42: Palette overlaps the review</h2>
+          <p>
+            Keep the annotation controls reachable without changing the page.
+          </p>
+        </article>
+        <aside class="panel merge-panel">
+          <strong>Ready to merge</strong>
+          <span class="muted">All deterministic checks passed.</span>
+          <button id="merge-button" type="button">Merge pull request</button>
+        </aside>
+        <section class="panel files" id="files" aria-label="Repository files">
+          <div class="file-row">
+            <strong>entrypoints</strong><span>Polish content overlay</span
+            ><span class="muted">2 min ago</span>
+          </div>
+          <div class="file-row">
+            <strong>src</strong><span>Keep state pure</span
+            ><span class="muted">8 min ago</span>
+          </div>
+          <div class="file-row">
+            <strong>tests</strong><span>Prove exact behavior</span
+            ><span class="muted">12 min ago</span>
+          </div>
+          <div class="file-row">
+            <strong>README.md</strong><span>Document cold install</span
+            ><span class="muted">18 min ago</span>
+          </div>
+        </section>
+      </div>
+    </main>
+    <script>
+      const starButton = document.querySelector('#star-button');
+      const starCount = document.querySelector('#star-count');
+      starButton.addEventListener('click', () => {
+        starCount.textContent = String(Number(starCount.textContent) + 1);
+      });
+    </script>
+  </body>
+</html>
