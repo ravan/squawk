@@ -4,6 +4,7 @@ import {
   numericAttribute,
   requiredBox,
   selectSquawkColor,
+  selectStrokeWidth,
 } from './browser-helpers';
 import { triggerExtensionAction } from './extension-driver';
 import { expect, test } from './extension-fixture';
@@ -24,13 +25,14 @@ test('draws and erases the full shape kit through the built extension', async ({
     'Pen',
     'Text',
     'Element picker',
+    'Eyedropper',
     'Eraser',
   ];
   const toolbar = page.getByRole('toolbar', { name: 'Squawk palette' });
   const labels = await toolbar
     .getByRole('button')
     .evaluateAll((buttons) =>
-      buttons.slice(0, 10).map((button) => button.getAttribute('aria-label')),
+      buttons.slice(0, 11).map((button) => button.getAttribute('aria-label')),
     );
   expect(labels).toEqual([
     'Drag Squawk palette',
@@ -42,6 +44,7 @@ test('draws and erases the full shape kit through the built extension', async ({
     'Pen',
     'Text',
     'Element picker',
+    'Eyedropper',
     'Eraser',
   ]);
   for (const name of [
@@ -50,6 +53,7 @@ test('draws and erases the full shape kit through the built extension', async ({
     'Pen',
     'Text',
     'Element picker',
+    'Eyedropper',
     'Eraser',
   ]) {
     await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
@@ -65,7 +69,7 @@ test('draws and erases the full shape kit through the built extension', async ({
   await expectSelectedTool('Interact');
 
   await selectSquawkColor(page, '#e03131');
-  await page.getByRole('button', { name: 'Stroke width 4' }).click();
+  await selectStrokeWidth(page, 4);
 
   const redBox = await requiredBox(page.locator('#target-red'));
   await page.getByRole('button', { name: 'Ellipse', exact: true }).click();

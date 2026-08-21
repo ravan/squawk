@@ -1,4 +1,3 @@
-import type { CaptureActivity } from '../../src/capture/controller';
 import { documentPointFromViewport } from '../../src/core/geometry';
 import {
   AnnotationIdSchema,
@@ -6,9 +5,11 @@ import {
   SelectionTargetIdSchema,
   type AnnotationId,
   type EraserTarget,
+  type SampledColor,
   type SelectionTargetHit,
   type SelectionTargetId,
   type SessionState,
+  type ViewportPoint,
 } from '../../src/core/model';
 import {
   beginGesture,
@@ -18,6 +19,7 @@ import {
   cancelMove,
   cancelTextDrawing,
   commitGesture,
+  commitColorSample,
   commitMove,
   commitPickerTarget,
   commitTextEdit,
@@ -37,7 +39,8 @@ export type PointerRoutingDependencies = Readonly<{
   signal: AbortSignal;
   state: () => SessionState;
   updateState: (state: SessionState) => void;
-  captureActivity: () => CaptureActivity;
+  interactionBlocked: () => boolean;
+  sampleColor: (point: ViewportPoint) => Promise<SampledColor | undefined>;
   createAnnotationId: () => AnnotationId;
   createSelectionTargetId: () => SelectionTargetId;
   elementPicker: ElementPickerView;
@@ -94,7 +97,8 @@ export function bindPointerRouting(
     signal,
     state,
     updateState,
-    captureActivity,
+    interactionBlocked,
+    sampleColor,
     createAnnotationId,
     createSelectionTargetId,
     elementPicker,
@@ -103,11 +107,7 @@ export function bindPointerRouting(
   overlay.addEventListener(
     'pointerdown',
     (event) => {
-      if (
-        captureActivity() === 'capturing' ||
-        event.button !== 0 ||
-        !event.isPrimary
-      ) {
+      if (interactionBlocked() || event.button !== 0 || !event.isPrimary) {
         return;
       }
 
@@ -183,6 +183,27 @@ export function bindPointerRouting(
           event.preventDefault();
           return;
         }
+        case 'eyedropper-armed': {
+          const viewportPoint = viewportPointFromPointer(event);
+          const point = pointFromPointer(event);
+          const annotationId = createAnnotationId();
+          const selectionTargetId = createSelectionTargetId();
+          event.preventDefault();
+          void sampleColor(viewportPoint).then((sampledColor) => {
+            if (sampledColor === undefined) {
+              return;
+            }
+            updateState(
+              commitColorSample(state(), {
+                annotationId,
+                selectionTargetId,
+                point,
+                sampledColor,
+              }),
+            );
+          });
+          return;
+        }
         case 'eraser-armed':
         case 'eraser-hovering': {
           const target = eraserTargetFromPointer(event);
@@ -212,7 +233,7 @@ export function bindPointerRouting(
   overlay.addEventListener(
     'pointermove',
     (event) => {
-      if (captureActivity() === 'capturing') {
+      if (interactionBlocked()) {
         return;
       }
 
@@ -278,7 +299,7 @@ export function bindPointerRouting(
   overlay.addEventListener(
     'pointerup',
     (event) => {
-      if (captureActivity() === 'capturing') {
+      if (interactionBlocked()) {
         return;
       }
 
@@ -323,7 +344,7 @@ export function bindPointerRouting(
   );
 
   const cancelPointer = (event: PointerEvent): void => {
-    if (captureActivity() === 'capturing') {
+    if (interactionBlocked()) {
       return;
     }
     const current = state();
@@ -353,7 +374,7 @@ export function bindPointerRouting(
   overlay.addEventListener(
     'pointerleave',
     () => {
-      if (captureActivity() === 'capturing') {
+      if (interactionBlocked()) {
         return;
       }
       updateState(

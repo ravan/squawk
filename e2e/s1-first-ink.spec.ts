@@ -5,6 +5,7 @@ import {
   numericAttribute,
   requiredBox,
   selectSquawkColor,
+  selectStrokeWidth,
   type PointerDrag,
 } from './browser-helpers';
 import { triggerExtensionAction } from './extension-driver';
@@ -39,8 +40,7 @@ test('draws document-anchored first ink through the extension action', async ({
     'Interact',
     'Rectangle',
     'Stroke width 2',
-    'Stroke width 4',
-    'Stroke width 6',
+    'Stroke style solid',
     'Undo',
     'Clear all',
     'Close Squawk',
@@ -49,25 +49,26 @@ test('draws document-anchored first ink through the extension action', async ({
     await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
   }
 
-  const color = page.getByRole('combobox', { name: 'Color', exact: true });
+  const color = page.getByRole('button', { name: /^Color / });
   await expect(color).toBeVisible();
-  await expect(color).toHaveValue('#e03131');
-  expect(await color.locator('option').allTextContents()).toEqual([
-    '⚫ Black',
-    '🔴 Red',
-    '🟢 Green',
-    '🔵 Blue',
-    '🟠 Orange',
-    '⚪ White',
+  await expect(color).toHaveAttribute('data-color', '#e03131');
+  await color.click();
+  const colorOptions = page.getByRole('option');
+  await expect(colorOptions).toHaveCount(6);
+  expect(await colorOptions.allTextContents()).toEqual([
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
   ]);
   expect(
-    await color
-      .locator('option')
-      .evaluateAll((options) =>
-        options.map((option) => option.getAttribute('value')),
-      ),
+    await colorOptions.evaluateAll((options) =>
+      options.map((option) => option.getAttribute('data-color')),
+    ),
   ).toEqual(['#1e1e1e', '#e03131', '#2f9e44', '#1971c2', '#f08c00', '#ffffff']);
-  await expect(page.getByRole('button', { name: /^Color #/ })).toHaveCount(0);
+  await color.click();
 
   const interact = page.getByRole('button', { name: 'Interact', exact: true });
   const rectangle = page.getByRole('button', {
@@ -82,11 +83,11 @@ test('draws document-anchored first ink through the extension action', async ({
   );
   await rectangle.click();
   await selectSquawkColor(page, '#e03131');
-  await page.getByRole('button', { name: 'Stroke width 2' }).click();
+  await selectStrokeWidth(page, 2);
   await drawInside(page, page.locator('#target-red'), 'free');
 
   await selectSquawkColor(page, '#2f9e44');
-  await page.getByRole('button', { name: 'Stroke width 4' }).click();
+  await selectStrokeWidth(page, 4);
   const squareDrag = await drawInside(
     page,
     page.locator('#target-green'),
@@ -94,7 +95,7 @@ test('draws document-anchored first ink through the extension action', async ({
   );
 
   await selectSquawkColor(page, '#1971c2');
-  await page.getByRole('button', { name: 'Stroke width 6' }).click();
+  await selectStrokeWidth(page, 6);
   await drawInside(page, page.locator('#target-blue'), 'free');
 
   await expect(committed).toHaveCount(3);

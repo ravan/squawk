@@ -8,6 +8,7 @@ import {
   monitorPageDiagnostics,
   requiredBox,
   selectSquawkColor,
+  selectTextSize,
   snapshotHostPage,
 } from './browser-helpers';
 import { triggerExtensionAction } from './extension-driver';
@@ -367,7 +368,7 @@ test('draws, wraps, moves, erases, restores, and captures bounded Text', async (
 
   await page.getByRole('button', { name: 'Text', exact: true }).click();
   await selectSquawkColor(page, '#e03131');
-  await page.getByRole('button', { name: 'Text size L', exact: true }).click();
+  await selectTextSize(page, 'L');
 
   await page.mouse.click(940, 100);
   await assertNoTextArtifact(editor, guide, committed);

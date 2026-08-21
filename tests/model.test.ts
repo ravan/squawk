@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   AnnotationSchema,
+  ColorSampleAnnotationSchema,
   DeleteOpSchema,
   FillStyleSchema,
   GesturePointerStartSchema,
@@ -12,6 +13,7 @@ import {
   PickerTargetSchema,
   PreviewAnnotationSchema,
   ShapeDraftSchema,
+  SampledColorSchema,
   SquawkColorSchema,
   StrokeStyleSchema,
   StyleStateSchema,
@@ -97,8 +99,18 @@ const label = {
   text: 'a.nav-link',
   color: '#1971c2',
 };
+const colorSample = {
+  id: 'color-sample-1',
+  selectionTargetId: 'target-color-sample-1',
+  kind: 'color-sample',
+  x: 48,
+  y: 64,
+  sampledColor: '#0F80FF',
+  strokeWidth: 4,
+  strokeStyle: 'dashed',
+};
 
-const annotations = [rectangle, ellipse, arrow, pen, text, label];
+const annotations = [rectangle, ellipse, arrow, pen, text, label, colorSample];
 
 describe('domain model', () => {
   it('domain model requires explicit Selection target identity and exact Move states', () => {
@@ -118,6 +130,7 @@ describe('domain model', () => {
       'pen',
       'text',
       'picker',
+      'eyedropper',
       'eraser',
     ]);
     expect(ToolCursorSchema.options).toEqual([
@@ -180,6 +193,9 @@ describe('domain model', () => {
     ]);
     expect(FillStyleSchema.options).toEqual(['none', 'solid']);
     expect(SquawkColorSchema.parse('#ffffff')).toBe('#ffffff');
+    expect(SampledColorSchema.parse('#0F80FF')).toBe('#0F80FF');
+    expect(() => SampledColorSchema.parse('#0f80ff')).toThrow();
+    expect(ColorSampleAnnotationSchema.parse(colorSample)).toEqual(colorSample);
     expect(() => FillStyleSchema.parse('translucent')).toThrow();
   });
 
@@ -431,7 +447,7 @@ describe('domain model', () => {
       OverlayItemSchema.parse({ ...highlight, fillStyle: 'solid' }),
     ).toThrow();
 
-    const styleState = { ...style, fillStyle: 'none' };
+    const styleState = { ...style, textSize: 18, fillStyle: 'none' };
     expect(StyleStateSchema.parse(styleState)).toEqual(styleState);
     expect(() => StyleStateSchema.parse(style)).toThrow();
     expect(() =>
@@ -456,13 +472,16 @@ describe('domain model', () => {
     expect(() =>
       OverlayItemSchema.parse({ ...highlight, strokeStyle: 'none' }),
     ).toThrow();
-    const styleState = { ...style, fillStyle: 'none' };
+    const styleState = { ...style, textSize: 18, fillStyle: 'none' };
     expect(StyleStateSchema.parse(styleState)).toEqual(styleState);
     expect(() =>
       StyleStateSchema.parse({ ...styleState, strokeStyle: undefined }),
     ).toThrow();
     expect(() =>
       StyleStateSchema.parse({ ...styleState, strokeStyle: 'none' }),
+    ).toThrow();
+    expect(() =>
+      StyleStateSchema.parse({ ...styleState, textSize: undefined }),
     ).toThrow();
   });
 

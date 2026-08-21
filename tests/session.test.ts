@@ -4,6 +4,7 @@ import {
   AnnotationIdSchema,
   PickerTargetSchema,
   PointerIdSchema,
+  SampledColorSchema,
   SelectionTargetIdSchema,
   type AnnotationId,
   type DocumentPoint,
@@ -21,6 +22,7 @@ import {
   cancelTextDrawing,
   clearSession,
   commitGesture,
+  commitColorSample,
   commitMove,
   commitPickerTarget,
   commitTextEdit,
@@ -38,8 +40,8 @@ import {
   setPickerTarget,
   setStrokeStyle,
   setStrokeWidth,
+  setTextSize,
   setTool,
-  textSizeForStrokeWidth,
   undoSession,
   updateMove,
   updateTextDrawing,
@@ -55,12 +57,16 @@ const pen1 = AnnotationIdSchema.parse('pen-1');
 const text1 = AnnotationIdSchema.parse('text-1');
 const rectPick1 = AnnotationIdSchema.parse('rect-pick-1');
 const labelPick1 = AnnotationIdSchema.parse('label-pick-1');
+const colorSample1 = AnnotationIdSchema.parse('color-sample-1');
 const targetRect1 = SelectionTargetIdSchema.parse('target-rect-1');
 const targetEllipse1 = SelectionTargetIdSchema.parse('target-ellipse-1');
 const targetArrow1 = SelectionTargetIdSchema.parse('target-arrow-1');
 const targetPen1 = SelectionTargetIdSchema.parse('target-pen-1');
 const targetText1 = SelectionTargetIdSchema.parse('target-text-1');
 const targetPicker1 = SelectionTargetIdSchema.parse('target-picker-1');
+const targetColorSample1 = SelectionTargetIdSchema.parse(
+  'target-color-sample-1',
+);
 const pickerTarget = PickerTargetSchema.parse({
   x: 10,
   y: 20,
@@ -128,6 +134,7 @@ describe('Session state', () => {
         color: '#e03131',
         strokeWidth: 2,
         strokeStyle: 'solid',
+        textSize: 14,
         fillStyle: 'none',
       },
       annotations: [],
@@ -161,6 +168,20 @@ describe('Session state', () => {
     expect(dashed.tool).toBe(state.tool);
     expect(dashed.annotations).toBe(state.annotations);
     expect(dashed.history).toBe(state.history);
+  });
+
+  it('changes only the live text size and preserves identity for a repeat', () => {
+    const state = createSessionState();
+    expect(setTextSize(state, 14)).toBe(state);
+
+    const large = setTextSize(state, 24);
+    expect(large).toEqual({
+      ...state,
+      style: { ...state.style, textSize: 24 },
+    });
+    expect(large.tool).toBe(state.tool);
+    expect(large.annotations).toBe(state.annotations);
+    expect(large.history).toBe(state.history);
   });
 
   it('changes only the live Fill style and preserves identity for a repeat', () => {
@@ -388,9 +409,51 @@ describe('Session state', () => {
       'crosshair',
     );
     expect(overlayCursor(setTool(createSessionState(), 'picker'))).toBe('cell');
+    expect(overlayCursor(setTool(createSessionState(), 'eyedropper'))).toBe(
+      'crosshair',
+    );
     expect(overlayCursor(setTool(createSessionState(), 'eraser'))).toBe(
       'not-allowed',
     );
+  });
+
+  it('commits a sampled pixel with the live stroke in one add op', () => {
+    const armed = setStrokeStyle(
+      setStrokeWidth(setTool(createSessionState(), 'eyedropper'), 4),
+      'dotted',
+    );
+    const state = commitColorSample(armed, {
+      annotationId: colorSample1,
+      selectionTargetId: targetColorSample1,
+      point: { x: 135.5, y: 248.25 },
+      sampledColor: SampledColorSchema.parse('#0F80FF'),
+    });
+    const annotation = {
+      id: 'color-sample-1',
+      selectionTargetId: 'target-color-sample-1',
+      kind: 'color-sample',
+      x: 135.5,
+      y: 248.25,
+      sampledColor: '#0F80FF',
+      strokeWidth: 4,
+      strokeStyle: 'dotted',
+    };
+
+    expect(state).toEqual({
+      ...armed,
+      tool: { kind: 'eyedropper-armed' },
+      annotations: [annotation],
+      history: [{ type: 'add', annotations: [annotation] }],
+    });
+    expect(overlayItems(state)).toEqual([
+      {
+        phase: 'committed',
+        annotation,
+        opacity: 1,
+        selectionAffordance: 'none',
+      },
+    ]);
+    expect(undoSession(state)).toEqual(armed);
   });
 
   it('arms Select without changing Interact', () => {
@@ -491,16 +554,10 @@ describe('Session state', () => {
     expect(next.tool).toEqual({ kind: 'picker-hovering', target: locTarget });
   });
 
-  it('maps stroke widths to text sizes', () => {
-    expect(textSizeForStrokeWidth(2)).toBe(14);
-    expect(textSizeForStrokeWidth(4)).toBe(18);
-    expect(textSizeForStrokeWidth(6)).toBe(24);
-  });
-
   it('draws a normalized bounded Text box before editing', () => {
-    const armed = setStrokeWidth(
+    const armed = setTextSize(
       setColor(setTool(createSessionState(), 'text'), '#e03131'),
-      6,
+      24,
     );
     let state = beginTextDrawing(armed, {
       pointerId: pointer1,
@@ -598,7 +655,7 @@ describe('Session state', () => {
   });
 
   it('discards invalid and cancelled Text boxes without annotations or history', () => {
-    const armed = setStrokeWidth(setTool(createSessionState(), 'text'), 6);
+    const armed = setTextSize(setTool(createSessionState(), 'text'), 24);
     const start = (point: DocumentPoint): SessionState =>
       beginTextDrawing(armed, {
         pointerId: pointer1,
@@ -640,12 +697,15 @@ describe('Session state', () => {
   });
 
   it('preserves exact authored Text and commits one bounded add operation', () => {
-    const armed = setStrokeStyle(
-      setStrokeWidth(
-        setColor(setTool(createSessionState(), 'text'), '#e03131'),
-        6,
+    const armed = setTextSize(
+      setStrokeStyle(
+        setStrokeWidth(
+          setColor(setTool(createSessionState(), 'text'), '#e03131'),
+          6,
+        ),
+        'dashed',
       ),
-      'dashed',
+      24,
     );
     let editing = beginTextDrawing(armed, {
       pointerId: pointer1,
@@ -664,6 +724,7 @@ describe('Session state', () => {
     expect(setFillStyle(editing, 'solid')).toBe(editing);
     expect(setStrokeWidth(editing, 2)).toBe(editing);
     expect(setStrokeStyle(editing, 'solid')).toBe(editing);
+    expect(setTextSize(editing, 14)).toBe(editing);
     expect(setTool(editing, 'rect')).toBe(editing);
     expect(undoSession(editing)).toBe(editing);
     expect(clearSession(editing)).toBe(editing);
@@ -721,7 +782,7 @@ describe('Session state', () => {
 
   it('moves bounded Text without reflow and follows the exact Escape ladder', () => {
     let drawing = beginTextDrawing(
-      setStrokeWidth(setTool(createSessionState(), 'text'), 6),
+      setTextSize(setTool(createSessionState(), 'text'), 24),
       {
         pointerId: pointer1,
         annotationId: text1,
@@ -882,6 +943,7 @@ describe('Session state', () => {
         color: '#2f9e44',
         strokeWidth: 4,
         strokeStyle: 'dotted',
+        textSize: 14,
         fillStyle: 'none',
       },
       annotations: [rectangle, label],
@@ -1018,6 +1080,7 @@ describe('Session state', () => {
         color: '#e03131',
         strokeWidth: 4,
         strokeStyle: 'solid',
+        textSize: 14,
         fillStyle: 'none',
       },
       annotations: [annotation],
@@ -1067,6 +1130,7 @@ describe('Session state', () => {
       color: '#1971c2',
       strokeWidth: 6,
       strokeStyle: 'dotted',
+      textSize: 14,
       fillStyle: 'none',
     });
   });

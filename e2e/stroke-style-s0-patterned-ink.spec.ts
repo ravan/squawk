@@ -8,6 +8,8 @@ import {
   monitorPageDiagnostics,
   requiredBox,
   selectSquawkColor,
+  selectStrokeStyle,
+  selectStrokeWidth,
   snapshotHostPage,
   type BrowserBox,
 } from './browser-helpers';
@@ -41,10 +43,6 @@ const ViewportEvidenceSchema = z
     devicePixelRatio: z.number().positive(),
   })
   .strict()
-  .readonly();
-const ButtonLabelsSchema = z.array(z.string()).readonly();
-const InitialPressedStatesSchema = z
-  .tuple([z.literal('true'), z.literal('false'), z.literal('false')])
   .readonly();
 const DocumentPointSchema = z
   .object({ x: z.number(), y: z.number() })
@@ -227,75 +225,74 @@ test('projects patterned ink honestly through drawing, erasing, undo, and captur
   const toolbar = page.getByRole('toolbar', { name: 'Squawk palette' });
   await expectHostPageUnchanged(page, hostSnapshot);
 
-  const colorSelect = page.getByRole('combobox', {
-    name: 'Color',
-    exact: true,
-  });
-  await expect(page.getByRole('combobox')).toHaveCount(1);
-  await expect(colorSelect).toBeVisible();
-  await expect(colorSelect).toHaveValue('#e03131');
-  expect(await colorSelect.locator('option').allTextContents()).toEqual([
-    '⚫ Black',
-    '🔴 Red',
-    '🟢 Green',
-    '🔵 Blue',
-    '🟠 Orange',
-    '⚪ White',
-  ]);
-  expect(
-    await colorSelect
-      .locator('option')
-      .evaluateAll((options) =>
-        options.map((option) => option.getAttribute('value')),
-      ),
-  ).toEqual(['#1e1e1e', '#e03131', '#2f9e44', '#1971c2', '#f08c00', '#ffffff']);
-  const colorSwatch = colorSelect.locator('..').locator('.color-swatch');
+  const colorDropdown = page.getByRole('button', { name: /^Color / });
+  await expect(colorDropdown).toBeVisible();
+  await expect(colorDropdown).toHaveAttribute('data-color', '#e03131');
+  const colorSwatch = colorDropdown.locator('.color-swatch');
   await expect(colorSwatch).toBeVisible();
   await expect(colorSwatch).toHaveCSS('background-color', 'rgb(224, 49, 49)');
-  await expect(page.getByRole('button', { name: /^Color #/ })).toHaveCount(0);
+  await colorDropdown.click();
+  const colorOptions = page.getByRole('option');
+  await expect(colorOptions).toHaveCount(6);
+  expect(await colorOptions.allTextContents()).toEqual([
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+  ]);
+  expect(
+    await colorOptions.evaluateAll((options) =>
+      options.map((option) => option.getAttribute('data-color')),
+    ),
+  ).toEqual(['#1e1e1e', '#e03131', '#2f9e44', '#1971c2', '#f08c00', '#ffffff']);
+  for (const option of await colorOptions.all()) {
+    await expect(option.locator('.color-swatch')).toBeVisible();
+  }
+  await colorDropdown.click();
 
-  const widthButtons: readonly [Locator, Locator, Locator] = [
-    page.getByRole('button', { name: 'Stroke width 2', exact: true }),
-    page.getByRole('button', { name: 'Stroke width 4', exact: true }),
-    page.getByRole('button', { name: 'Stroke width 6', exact: true }),
-  ];
-  const styleButtons: readonly [Locator, Locator, Locator] = [
-    page.getByRole('button', { name: 'Stroke style solid', exact: true }),
-    page.getByRole('button', { name: 'Stroke style dashed', exact: true }),
-    page.getByRole('button', { name: 'Stroke style dotted', exact: true }),
-  ];
-  const buttonLabels = ButtonLabelsSchema.parse(
-    await toolbar
-      .getByRole('button')
-      .evaluateAll((buttons) =>
-        buttons.map((button) => button.getAttribute('aria-label')),
-      ),
-  );
-  const widthIndexes = widthButtons.map((_, index) =>
-    buttonLabels.indexOf(`Stroke width ${String((index + 1) * 2)}`),
-  );
-  const styleIndexes = ['solid', 'dashed', 'dotted'].map((style) =>
-    buttonLabels.indexOf(`Stroke style ${style}`),
-  );
+  const widthTrigger = page.getByRole('button', {
+    name: 'Stroke width 2',
+    exact: true,
+  });
+  const styleTrigger = page.getByRole('button', {
+    name: 'Stroke style solid',
+    exact: true,
+  });
+  const textSizeTrigger = page.getByRole('button', {
+    name: 'Text size S',
+    exact: true,
+  });
+  const buttonLabels = await toolbar
+    .getByRole('button')
+    .evaluateAll((buttons) =>
+      buttons.map((button) => button.getAttribute('aria-label')),
+    );
+  const widthIndex = buttonLabels.indexOf('Stroke width 2');
+  const styleIndex = buttonLabels.indexOf('Stroke style solid');
+  const textSizeIndex = buttonLabels.indexOf('Text size S');
   const undoIndex = buttonLabels.indexOf('Undo');
-  expect(widthIndexes.every((index) => index >= 0)).toBe(true);
-  expect(styleIndexes.every((index) => index >= 0)).toBe(true);
-  expect(Math.max(...widthIndexes)).toBeLessThan(Math.min(...styleIndexes));
-  expect(Math.max(...styleIndexes)).toBeLessThan(undoIndex);
+  expect(widthIndex).toBeGreaterThanOrEqual(0);
+  expect(styleIndex).toBeGreaterThan(widthIndex);
+  expect(textSizeIndex).toBeGreaterThan(styleIndex);
+  expect(textSizeIndex).toBeLessThan(undoIndex);
 
   const eraserBox = await requiredBox(
     page.getByRole('button', { name: 'Eraser', exact: true }),
   );
-  const colorBox = await requiredBox(colorSelect);
-  const widthBox = await requiredBox(widthButtons[0]);
-  const styleBox = await requiredBox(styleButtons[0]);
+  const colorBox = await requiredBox(colorDropdown);
+  const widthBox = await requiredBox(widthTrigger);
+  const styleBox = await requiredBox(styleTrigger);
+  const textSizeBox = await requiredBox(textSizeTrigger);
   const undoBox = await requiredBox(
     page.getByRole('button', { name: 'Undo', exact: true }),
   );
   expect(eraserBox.x + eraserBox.width).toBeLessThanOrEqual(colorBox.x);
   expect(colorBox.x + colorBox.width).toBeLessThanOrEqual(widthBox.x);
   expect(widthBox.x + widthBox.width).toBeLessThan(styleBox.x);
-  expect(styleBox.x + styleBox.width).toBeLessThan(undoBox.x);
+  expect(styleBox.x + styleBox.width).toBeLessThan(textSizeBox.x);
+  expect(textSizeBox.x + textSizeBox.width).toBeLessThan(undoBox.x);
 
   await page.setViewportSize({ width: 720, height: 600 });
   const narrowShellBox = await requiredBox(shell);
@@ -303,35 +300,47 @@ test('projects patterned ink honestly through drawing, erasing, undo, and captur
   expect(narrowShellBox.y).toBeGreaterThanOrEqual(8);
   expect(narrowShellBox.x + narrowShellBox.width).toBeLessThanOrEqual(712);
   expect(narrowShellBox.y + narrowShellBox.height).toBeLessThanOrEqual(592);
-  const narrowColorBox = await requiredBox(colorSelect);
+  const narrowColorBox = await requiredBox(colorDropdown);
   expect(narrowColorBox.width).toBe(36);
   expect(narrowColorBox.height).toBe(32);
-  await colorSelect.focus();
-  await expect(colorSelect).toBeFocused();
+  await colorDropdown.focus();
+  await expect(colorDropdown).toBeFocused();
   const narrowControls = toolbar.getByRole('button');
   const narrowControlCount = await narrowControls.count();
   for (let index = 0; index < narrowControlCount; index += 1) {
     await narrowControls.nth(index).scrollIntoViewIfNeeded();
     await expect(narrowControls.nth(index)).toBeVisible();
   }
-  await colorSelect.scrollIntoViewIfNeeded();
-  await expect(colorSelect).toBeVisible();
+  await colorDropdown.scrollIntoViewIfNeeded();
+  await expect(colorDropdown).toBeVisible();
   await page.setViewportSize({ width: 1280, height: 720 });
 
-  const initialPressedStates = InitialPressedStatesSchema.parse(
-    await Promise.all(
-      styleButtons.map((button) => button.getAttribute('aria-pressed')),
-    ),
-  );
-  expect(initialPressedStates).toEqual(['true', 'false', 'false']);
-  for (const button of styleButtons) {
-    await expect(button).toBeEnabled();
-  }
-
+  await styleTrigger.click();
+  const styleOptions: readonly [Locator, Locator, Locator] = [
+    page.getByRole('option', {
+      name: 'Stroke style solid',
+      exact: true,
+      includeHidden: true,
+    }),
+    page.getByRole('option', {
+      name: 'Stroke style dashed',
+      exact: true,
+      includeHidden: true,
+    }),
+    page.getByRole('option', {
+      name: 'Stroke style dotted',
+      exact: true,
+      includeHidden: true,
+    }),
+  ];
+  await expect(styleTrigger).toHaveAttribute('aria-expanded', 'true');
+  await expect(styleOptions[0]).toHaveAttribute('aria-selected', 'true');
+  await expect(styleOptions[1]).toHaveAttribute('aria-selected', 'false');
+  await expect(styleOptions[2]).toHaveAttribute('aria-selected', 'false');
   const sampleLines: readonly [Locator, Locator, Locator] = [
-    styleButtons[0].locator('svg line'),
-    styleButtons[1].locator('svg line'),
-    styleButtons[2].locator('svg line'),
+    styleOptions[0].locator('svg line'),
+    styleOptions[1].locator('svg line'),
+    styleOptions[2].locator('svg line'),
   ];
   for (const line of sampleLines) {
     await expect(line).toHaveAttribute('stroke-width', '2');
@@ -340,9 +349,46 @@ test('projects patterned ink honestly through drawing, erasing, undo, and captur
   await expect(sampleLines[0]).not.toHaveAttribute('stroke-dasharray');
   await expect(sampleLines[1]).toHaveAttribute('stroke-dasharray', '6 4');
   await expect(sampleLines[2]).toHaveAttribute('stroke-dasharray', '0 4');
+  await styleOptions[1].click();
+  await expect(
+    page.getByRole('button', { name: 'Stroke style dashed', exact: true }),
+  ).toHaveAttribute('aria-expanded', 'false');
 
-  await styleButtons[1].click();
-  await widthButtons[1].click();
+  await expect(widthTrigger.locator('svg line')).not.toHaveAttribute(
+    'stroke-dasharray',
+  );
+  await expect(widthTrigger.locator('.stroke-text-size')).toBeHidden();
+  await widthTrigger.click();
+  const widthOptions: readonly [Locator, Locator, Locator] = [
+    page.getByRole('option', { name: 'Stroke width 2', exact: true }),
+    page.getByRole('option', { name: 'Stroke width 4', exact: true }),
+    page.getByRole('option', { name: 'Stroke width 6', exact: true }),
+  ];
+  expect(
+    await page
+      .locator('.stroke-width-select [role="option"]')
+      .allTextContents(),
+  ).toEqual(['', '', '']);
+  await expect(widthOptions[0].locator('svg line')).toHaveAttribute(
+    'stroke-width',
+    '2',
+  );
+  await expect(widthOptions[1].locator('svg line')).toHaveAttribute(
+    'stroke-width',
+    '4',
+  );
+  await expect(widthOptions[2].locator('svg line')).toHaveAttribute(
+    'stroke-width',
+    '6',
+  );
+  for (const option of widthOptions) {
+    await expect(option.locator('svg line')).not.toHaveAttribute(
+      'stroke-dasharray',
+    );
+    await expect(option.locator('.stroke-text-size')).toBeHidden();
+    await expect(option.locator('.stroke-menu-label')).toBeHidden();
+  }
+  await widthOptions[1].click();
   await page.getByRole('button', { name: 'Rectangle', exact: true }).click();
   await selectSquawkColor(page, '#e03131');
   await page.mouse.move(80, 150);
@@ -372,8 +418,8 @@ test('projects patterned ink honestly through drawing, erasing, undo, and captur
   await expect(rectangle).toHaveAttribute('stroke-linejoin', 'round');
   await expectContinuousHitTarget(rectangle, rectangleId);
 
-  await styleButtons[2].click();
-  await widthButtons[0].click();
+  await selectStrokeStyle(page, 'dotted');
+  await selectStrokeWidth(page, 2);
   await page.getByRole('button', { name: 'Ellipse', exact: true }).click();
   await selectSquawkColor(page, '#2f9e44');
   await expect(rectangle).toHaveAttribute('stroke', '#e03131');
@@ -444,8 +490,8 @@ test('projects patterned ink honestly through drawing, erasing, undo, and captur
     overlay.locator('.annotation[data-phase="preview"]'),
   ).toHaveCount(0);
 
-  await widthButtons[2].click();
-  await styleButtons[1].click();
+  await selectStrokeWidth(page, 6);
+  await selectStrokeStyle(page, 'dashed');
   await page
     .getByRole('button', { name: 'Element picker', exact: true })
     .click();
@@ -487,17 +533,17 @@ test('projects patterned ink honestly through drawing, erasing, undo, and captur
   expect(await annotationIds(committed)).toEqual(originalOrder);
 
   await page.getByRole('button', { name: 'Text', exact: true }).click();
-  for (const button of styleButtons) {
-    await expect(button).toBeDisabled();
-  }
-  await expect(styleButtons[0]).toHaveAttribute('aria-pressed', 'false');
-  await expect(styleButtons[1]).toHaveAttribute('aria-pressed', 'true');
-  await expect(styleButtons[2]).toHaveAttribute('aria-pressed', 'false');
+  const disabledStyleTrigger = page.getByRole('button', {
+    name: 'Stroke style dashed',
+    exact: true,
+  });
+  await expect(disabledStyleTrigger).toBeDisabled();
+  await expect(styleOptions[0]).toHaveAttribute('aria-selected', 'false');
+  await expect(styleOptions[1]).toHaveAttribute('aria-selected', 'true');
+  await expect(styleOptions[2]).toHaveAttribute('aria-selected', 'false');
   await page.getByRole('button', { name: 'Interact', exact: true }).click();
-  for (const button of styleButtons) {
-    await expect(button).toBeEnabled();
-  }
-  await expect(styleButtons[1]).toHaveAttribute('aria-pressed', 'true');
+  await expect(disabledStyleTrigger).toBeEnabled();
+  await expect(styleOptions[1]).toHaveAttribute('aria-selected', 'true');
 
   await page.getByRole('button', { name: 'Eraser', exact: true }).click();
   const points = penPoints(await requiredAttribute(pen, 'points'));

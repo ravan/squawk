@@ -69,6 +69,7 @@ export function translateAnnotation(
       };
     case 'text':
     case 'label':
+    case 'color-sample':
       return {
         ...annotation,
         x: annotation.x + delta.x,

@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { z } from 'zod';
 
-import type { SquawkColor } from '../src/core/model';
+import type { SquawkColor, StrokeStyle, StrokeWidth } from '../src/core/model';
 
 export const BrowserPointSchema = z
   .object({ x: z.number(), y: z.number() })
@@ -59,9 +59,65 @@ export async function selectSquawkColor(
   page: Page,
   color: SquawkColor,
 ): Promise<void> {
-  const select = page.getByRole('combobox', { name: 'Color', exact: true });
-  await select.selectOption(color);
-  await expect(select).toHaveValue(color);
+  const trigger = page.getByRole('button', { name: /^Color / });
+  await trigger.click();
+  await page.locator(`[role="option"][data-color="${color}"]`).click();
+  await expect(trigger).toHaveAttribute('data-color', color);
+}
+
+export async function selectStrokeWidth(
+  page: Page,
+  strokeWidth: StrokeWidth,
+): Promise<void> {
+  await page
+    .getByRole('button', { name: /^Stroke width \d$/, exact: true })
+    .click();
+  await page
+    .getByRole('option', {
+      name: `Stroke width ${String(strokeWidth)}`,
+      exact: true,
+    })
+    .click();
+  await expect(
+    page.getByRole('button', {
+      name: `Stroke width ${String(strokeWidth)}`,
+      exact: true,
+    }),
+  ).toBeVisible();
+}
+
+export async function selectStrokeStyle(
+  page: Page,
+  strokeStyle: StrokeStyle,
+): Promise<void> {
+  await page
+    .getByRole('button', { name: /^Stroke style /, exact: true })
+    .click();
+  await page
+    .getByRole('option', {
+      name: `Stroke style ${strokeStyle}`,
+      exact: true,
+    })
+    .click();
+  await expect(
+    page.getByRole('button', {
+      name: `Stroke style ${strokeStyle}`,
+      exact: true,
+    }),
+  ).toBeVisible();
+}
+
+export async function selectTextSize(
+  page: Page,
+  size: 'S' | 'M' | 'L',
+): Promise<void> {
+  await page.getByRole('button', { name: /^Text size [SML]$/ }).click();
+  await page
+    .getByRole('option', { name: `Text size ${size}`, exact: true })
+    .click();
+  await expect(
+    page.getByRole('button', { name: `Text size ${size}`, exact: true }),
+  ).toBeVisible();
 }
 
 export async function documentBox(

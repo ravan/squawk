@@ -49,6 +49,10 @@ const LABEL_BACKGROUND_COLOR = '#000000';
 const LABEL_BACKGROUND_PADDING_X = 3;
 const LABEL_BACKGROUND_PADDING_Y = 2;
 const LABEL_BACKGROUND_RADIUS = 2;
+const COLOR_SAMPLE_RADIUS = 8;
+const COLOR_SAMPLE_LABEL_OFFSET = 14;
+const COLOR_SAMPLE_LABEL_WIDTH = 64;
+const COLOR_SAMPLE_LABEL_HEIGHT = 20;
 
 type CommittedOverlayItem = Extract<OverlayItem, { phase: 'committed' }>;
 type MovePreviewOverlayItem = Extract<OverlayItem, { phase: 'move-preview' }>;
@@ -173,6 +177,14 @@ function applySelectionStrokeAttributes(
   element.setAttribute('stroke-linecap', 'round');
   element.setAttribute('stroke-linejoin', 'round');
   element.setAttribute('opacity', String(SELECTION_OPACITY));
+}
+
+function contrastingColor(color: string): '#000000' | '#ffffff' {
+  const red = Number.parseInt(color.slice(1, 3), 16);
+  const green = Number.parseInt(color.slice(3, 5), 16);
+  const blue = Number.parseInt(color.slice(5, 7), 16);
+  const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
+  return luminance >= 150 ? '#000000' : '#ffffff';
 }
 
 function renderText(
@@ -675,6 +687,91 @@ function renderAnnotationItem(
       affordance.setAttribute('points', pointList(item.annotation.points));
       applySelectionStrokeAttributes(affordance, item.annotation.strokeWidth);
       return [affordance, polyline, hitTarget];
+    }
+    case 'color-sample': {
+      const { annotation } = item;
+      const contrast = contrastingColor(annotation.sampledColor);
+      const group = document.createElementNS(SVG_NAMESPACE, 'g');
+      applyRootAttributes(group, item);
+      group.dataset.sampledColor = annotation.sampledColor;
+
+      const halo = document.createElementNS(SVG_NAMESPACE, 'circle');
+      halo.classList.add('color-sample-halo');
+      halo.setAttribute('cx', String(annotation.x));
+      halo.setAttribute('cy', String(annotation.y));
+      halo.setAttribute('r', String(COLOR_SAMPLE_RADIUS));
+      halo.setAttribute('fill', 'none');
+      halo.setAttribute('stroke', contrast);
+      halo.setAttribute('stroke-width', String(annotation.strokeWidth + 2));
+
+      const circle = document.createElementNS(SVG_NAMESPACE, 'circle');
+      circle.classList.add('color-sample-circle');
+      circle.setAttribute('cx', String(annotation.x));
+      circle.setAttribute('cy', String(annotation.y));
+      circle.setAttribute('r', String(COLOR_SAMPLE_RADIUS));
+      circle.setAttribute('fill', 'none');
+      circle.setAttribute('stroke', annotation.sampledColor);
+      circle.setAttribute('stroke-width', String(annotation.strokeWidth));
+      applyStrokePattern(
+        circle,
+        annotation.strokeStyle,
+        annotation.strokeWidth,
+      );
+
+      const labelX = annotation.x + COLOR_SAMPLE_LABEL_OFFSET;
+      const labelY = annotation.y - COLOR_SAMPLE_LABEL_HEIGHT / 2;
+      const background = document.createElementNS(SVG_NAMESPACE, 'rect');
+      background.classList.add('color-sample-label-background');
+      background.setAttribute('x', String(labelX));
+      background.setAttribute('y', String(labelY));
+      background.setAttribute('width', String(COLOR_SAMPLE_LABEL_WIDTH));
+      background.setAttribute('height', String(COLOR_SAMPLE_LABEL_HEIGHT));
+      background.setAttribute('rx', '4');
+      background.setAttribute('fill', annotation.sampledColor);
+      background.setAttribute('stroke', contrast);
+      background.setAttribute('stroke-width', '1');
+
+      const text = document.createElementNS(SVG_NAMESPACE, 'text');
+      text.classList.add('color-sample-label');
+      text.setAttribute('x', String(labelX + 5));
+      text.setAttribute('y', String(annotation.y));
+      text.setAttribute('dominant-baseline', 'middle');
+      text.setAttribute('fill', contrast);
+      text.setAttribute('font-family', 'ui-monospace, monospace');
+      text.setAttribute('font-size', '11');
+      text.setAttribute('font-weight', '700');
+      text.textContent = annotation.sampledColor;
+      group.append(halo, circle, background, text);
+
+      const hitTarget = document.createElementNS(SVG_NAMESPACE, 'rect');
+      hitTarget.setAttribute('x', String(annotation.x - 12));
+      hitTarget.setAttribute('y', String(annotation.y - 12));
+      hitTarget.setAttribute(
+        'width',
+        String(COLOR_SAMPLE_LABEL_OFFSET + COLOR_SAMPLE_LABEL_WIDTH + 12),
+      );
+      hitTarget.setAttribute('height', '24');
+      hitTarget.setAttribute('rx', '6');
+      applyFilledHitTargetAttributes(
+        hitTarget,
+        annotation.id,
+        annotation.selectionTargetId,
+      );
+
+      if (item.selectionAffordance === 'none') {
+        return [group, hitTarget];
+      }
+      const affordance = document.createElementNS(SVG_NAMESPACE, 'rect');
+      affordance.setAttribute('x', String(annotation.x - 12));
+      affordance.setAttribute('y', String(annotation.y - 12));
+      affordance.setAttribute(
+        'width',
+        String(COLOR_SAMPLE_LABEL_OFFSET + COLOR_SAMPLE_LABEL_WIDTH + 12),
+      );
+      affordance.setAttribute('height', '24');
+      affordance.setAttribute('rx', '6');
+      applySelectionStrokeAttributes(affordance, annotation.strokeWidth);
+      return [affordance, group, hitTarget];
     }
     case 'text':
     case 'label':

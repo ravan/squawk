@@ -7,6 +7,8 @@ import {
   monitorPageDiagnostics,
   requiredBox,
   selectSquawkColor,
+  selectStrokeWidth,
+  selectTextSize,
   snapshotHostPage,
   type BrowserBox,
 } from './browser-helpers';
@@ -80,6 +82,12 @@ test('runs every tool and Palette action on a GitHub-like page', async ({
   expect(720 - (bottomRight.y + bottomRight.height)).toBeLessThanOrEqual(9);
 
   await page.setViewportSize({ width: 720, height: 600 });
+  await expect
+    .poll(async () => {
+      const box = await requiredBox(shell);
+      return box.x + box.width;
+    })
+    .toBeLessThanOrEqual(712);
   expectWithinViewport(await requiredBox(shell), 720, 600);
   const overflow = await toolbar.evaluate((element) => ({
     clientWidth: element.clientWidth,
@@ -94,15 +102,12 @@ test('runs every tool and Palette action on a GitHub-like page', async ({
     await expect(control).toBeVisible();
     await expect(control).toHaveAttribute('title', /.+/);
   }
-  const colorSelect = toolbar.getByRole('combobox', {
-    name: 'Color',
-    exact: true,
-  });
-  await colorSelect.scrollIntoViewIfNeeded();
-  await expect(colorSelect).toBeVisible();
-  await expect(colorSelect).toHaveAttribute('title', /.+/);
-  await colorSelect.focus();
-  await expect(colorSelect).toBeFocused();
+  const colorDropdown = toolbar.getByRole('button', { name: /^Color / });
+  await colorDropdown.scrollIntoViewIfNeeded();
+  await expect(colorDropdown).toBeVisible();
+  await expect(colorDropdown).toHaveAttribute('title', /.+/);
+  await colorDropdown.focus();
+  await expect(colorDropdown).toBeFocused();
 
   const interact = page.getByRole('button', {
     name: 'Interact',
@@ -112,11 +117,9 @@ test('runs every tool and Palette action on a GitHub-like page', async ({
 
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.getByRole('button', { name: 'Text', exact: true }).click();
-  for (const sizeName of ['S', 'M', 'L']) {
-    await expect(
-      page.getByRole('button', { name: `Text size ${sizeName}`, exact: true }),
-    ).toHaveAttribute('title', `Text size ${sizeName}`);
-  }
+  await expect(
+    page.getByRole('button', { name: 'Text size S', exact: true }),
+  ).toHaveAttribute('title', 'Text size S');
 
   const overlay = host.locator('svg.overlay');
   const cursorCases: readonly (readonly [string, string])[] = [
@@ -127,6 +130,7 @@ test('runs every tool and Palette action on a GitHub-like page', async ({
     ['Arrow', 'crosshair'],
     ['Pen', 'crosshair'],
     ['Text', 'crosshair'],
+    ['Eyedropper', 'crosshair'],
     ['Element picker', 'cell'],
     ['Eraser', 'not-allowed'],
   ];
@@ -150,7 +154,7 @@ test('runs every tool and Palette action on a GitHub-like page', async ({
 
   await page.getByRole('button', { name: 'Rectangle', exact: true }).click();
   await selectSquawkColor(page, '#e03131');
-  await page.getByRole('button', { name: 'Stroke width 6' }).click();
+  await selectStrokeWidth(page, 6);
   const issue = await requiredBox(page.locator('#issue-42'));
   await dragPointer(page, {
     constraint: 'free',
@@ -209,7 +213,7 @@ test('runs ellipse and text workflows on a Tailwind-style SPA', async ({
 
   await page.getByRole('button', { name: 'Ellipse', exact: true }).click();
   await selectSquawkColor(page, '#2f9e44');
-  await page.getByRole('button', { name: 'Stroke width 4' }).click();
+  await selectStrokeWidth(page, 4);
   const conversion = await requiredBox(page.locator('#conversion-card'));
   await dragPointer(page, {
     constraint: 'free',
@@ -228,7 +232,7 @@ test('runs ellipse and text workflows on a Tailwind-style SPA', async ({
 
   await page.getByRole('button', { name: 'Text', exact: true }).click();
   await selectSquawkColor(page, '#e03131');
-  await page.getByRole('button', { name: 'Text size L' }).click();
+  await selectTextSize(page, 'L');
   const spacingTarget = await requiredBox(page.locator('#spacing-target'));
   const textStart = {
     x: spacingTarget.x + spacingTarget.width + 16,

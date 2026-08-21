@@ -5,6 +5,7 @@ import {
   numericAttribute,
   requiredBox,
   selectSquawkColor,
+  selectStrokeWidth,
   type DocumentBox,
 } from './browser-helpers';
 import { triggerExtensionAction } from './extension-driver';
@@ -61,7 +62,7 @@ test('points at DOM elements through the built extension', async ({
   const labels = await toolbar
     .getByRole('button')
     .evaluateAll((buttons) =>
-      buttons.slice(0, 10).map((button) => button.getAttribute('aria-label')),
+      buttons.slice(0, 11).map((button) => button.getAttribute('aria-label')),
     );
   expect(labels).toEqual([
     'Drag Squawk palette',
@@ -73,6 +74,7 @@ test('points at DOM elements through the built extension', async ({
     'Pen',
     'Text',
     'Element picker',
+    'Eyedropper',
     'Eraser',
   ]);
 
@@ -109,7 +111,7 @@ test('points at DOM elements through the built extension', async ({
   }
 
   await selectSquawkColor(page, '#1971c2');
-  await page.getByRole('button', { name: 'Stroke width 4' }).click();
+  await selectStrokeWidth(page, 4);
   const navBox = await documentBox(page, navLink);
   const urlBeforePick = page.url();
   await clickCenter(page, navLink);

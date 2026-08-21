@@ -2,7 +2,11 @@ import {
   createCaptureController,
   type SquawkChromeVisibility,
 } from '../../src/capture/controller';
-import type { SessionState } from '../../src/core/model';
+import type {
+  SampledColor,
+  SessionState,
+  ViewportPoint,
+} from '../../src/core/model';
 import {
   clearSession,
   commitTextEdit,
@@ -14,6 +18,7 @@ import {
   setPickerTarget,
   setStrokeStyle,
   setStrokeWidth,
+  setTextSize,
   setTool,
   undoSession,
   updateTextEdit,
@@ -31,6 +36,7 @@ import {
 } from './identity';
 import { SQUAWK_HOST_ID } from '../../src/core/svelte-loc';
 import { createElementPicker } from './element-picker';
+import { sampleCapturedColor } from './color-sampler';
 import { createOverlay } from './overlay';
 import { createPalette } from './palette';
 import { bindPointerRouting } from './pointer-routing';
@@ -62,6 +68,7 @@ export function mountSquawkSession(): SquawkSession {
 
   const teardownController = new AbortController();
   let tornDown = false;
+  let colorSampling = false;
   let state = createSessionState();
 
   const teardown = (): void => {
@@ -118,6 +125,43 @@ export function mountSquawkSession(): SquawkSession {
     }
   }
 
+  async function sampleColor(
+    point: ViewportPoint,
+  ): Promise<SampledColor | undefined> {
+    if (
+      tornDown ||
+      colorSampling ||
+      captureController.activity() === 'capturing'
+    ) {
+      return undefined;
+    }
+    colorSampling = true;
+    setChromeVisibility('hidden-for-capture');
+    try {
+      await waitForCaptureFrame();
+      if (teardownController.signal.aborted) {
+        return undefined;
+      }
+      const response = await requestVisibleTabCapture();
+      if (response.kind === 'capture-failed') {
+        toast.show('Capture failed');
+        return undefined;
+      }
+      return await sampleCapturedColor(response.pngDataUrl, point);
+    } catch {
+      if (!teardownController.signal.aborted) {
+        toast.show('Capture failed');
+      }
+      return undefined;
+    } finally {
+      colorSampling = false;
+      if (!teardownController.signal.aborted) {
+        setChromeVisibility('visible');
+        render();
+      }
+    }
+  }
+
   function captureActivityChanged(): void {
     render();
   }
@@ -165,6 +209,9 @@ export function mountSquawkSession(): SquawkSession {
       setStrokeStyle: (strokeStyle) => {
         updateState(setStrokeStyle(state, strokeStyle));
       },
+      setTextSize: (textSize) => {
+        updateState(setTextSize(state, textSize));
+      },
       undo: () => {
         updateState(undoSession(state));
       },
@@ -195,7 +242,9 @@ export function mountSquawkSession(): SquawkSession {
     signal: teardownController.signal,
     state: () => state,
     updateState,
-    captureActivity: () => captureController.activity(),
+    interactionBlocked: () =>
+      colorSampling || captureController.activity() === 'capturing',
+    sampleColor,
     createAnnotationId: () => annotationIdFromEntropy(browserIdentityEntropy()),
     createSelectionTargetId: () =>
       selectionTargetIdFromEntropy(browserIdentityEntropy()),

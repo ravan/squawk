@@ -1,7 +1,12 @@
 import type { Locator, Page } from '@playwright/test';
 import { z } from 'zod';
 
-import { dragPointer, requiredBox, selectSquawkColor } from './browser-helpers';
+import {
+  dragPointer,
+  requiredBox,
+  selectSquawkColor,
+  selectStrokeWidth,
+} from './browser-helpers';
 import { triggerExtensionAction } from './extension-driver';
 import { expect, test } from './extension-fixture';
 
@@ -56,7 +61,7 @@ test('copies an Annotation-only viewport PNG through the real extension', async 
 
   await page.getByRole('button', { name: 'Rectangle', exact: true }).click();
   await selectSquawkColor(page, '#e03131');
-  await page.getByRole('button', { name: 'Stroke width 6' }).click();
+  await selectStrokeWidth(page, 6);
   await drawAround(page, page.locator('#capture-target'));
 
   const committed = page.locator(

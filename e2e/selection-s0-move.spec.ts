@@ -7,6 +7,9 @@ import {
   monitorPageDiagnostics,
   requiredBox,
   selectSquawkColor,
+  selectStrokeStyle,
+  selectStrokeWidth,
+  selectTextSize,
   snapshotHostPage,
 } from './browser-helpers';
 import { triggerExtensionAction } from './extension-driver';
@@ -599,7 +602,7 @@ test('selects, moves, undoes, cancels, and captures every Selection target hones
   const toolButtons = toolbar.getByRole('button');
   expect(
     await toolButtons.evaluateAll((buttons) =>
-      buttons.slice(0, 10).map((button) => button.getAttribute('aria-label')),
+      buttons.slice(0, 11).map((button) => button.getAttribute('aria-label')),
     ),
   ).toEqual([
     'Drag Squawk palette',
@@ -611,6 +614,7 @@ test('selects, moves, undoes, cancels, and captures every Selection target hones
     'Pen',
     'Text',
     'Element picker',
+    'Eyedropper',
     'Eraser',
   ]);
   const interact = page.getByRole('button', { name: 'Interact', exact: true });
@@ -620,8 +624,8 @@ test('selects, moves, undoes, cancels, and captures every Selection target hones
   await expect(select).toHaveAttribute('title', 'Select');
 
   await selectSquawkColor(page, '#e03131');
-  await page.getByRole('button', { name: 'Stroke width 2' }).click();
-  await page.getByRole('button', { name: 'Stroke style solid' }).click();
+  await selectStrokeWidth(page, 2);
+  await selectStrokeStyle(page, 'solid');
   await drawGesture(
     page,
     'Rectangle',
@@ -634,8 +638,8 @@ test('selects, moves, undoes, cancels, and captures every Selection target hones
   }
 
   await selectSquawkColor(page, '#f08c00');
-  await page.getByRole('button', { name: 'Stroke width 4' }).click();
-  await page.getByRole('button', { name: 'Stroke style dashed' }).click();
+  await selectStrokeWidth(page, 4);
+  await selectStrokeStyle(page, 'dashed');
   await drawGesture(
     page,
     'Rectangle',
@@ -648,8 +652,8 @@ test('selects, moves, undoes, cancels, and captures every Selection target hones
   }
 
   await selectSquawkColor(page, '#2f9e44');
-  await page.getByRole('button', { name: 'Stroke width 2' }).click();
-  await page.getByRole('button', { name: 'Stroke style solid' }).click();
+  await selectStrokeWidth(page, 2);
+  await selectStrokeStyle(page, 'solid');
   await drawGesture(
     page,
     'Ellipse',
@@ -687,7 +691,7 @@ test('selects, moves, undoes, cancels, and captures every Selection target hones
 
   await page.getByRole('button', { name: 'Text', exact: true }).click();
   await selectSquawkColor(page, '#e03131');
-  await page.getByRole('button', { name: 'Text size M', exact: true }).click();
+  await selectTextSize(page, 'M');
   await drawGesture(
     page,
     'Text',
@@ -747,44 +751,25 @@ test('selects, moves, undoes, cancels, and captures every Selection target hones
     ),
   ).toBe(true);
 
-  const color = page.getByRole('combobox', { name: 'Color', exact: true });
-  const widthButtons = [2, 4, 6].map((width) =>
-    page.getByRole('button', {
-      name: `Stroke width ${String(width)}`,
-      exact: true,
-    }),
-  );
-  const styleButtons = ['solid', 'dashed', 'dotted'].map((style) =>
-    page.getByRole('button', {
-      name: `Stroke style ${style}`,
-      exact: true,
-    }),
-  );
-  const colorBeforeSelect = await color.inputValue();
-  const widthsBeforeSelect = await Promise.all(
-    widthButtons.map((button) => button.getAttribute('aria-pressed')),
-  );
-  const stylesBeforeSelect = await Promise.all(
-    styleButtons.map((button) => button.getAttribute('aria-pressed')),
-  );
+  const color = page.getByRole('button', { name: /^Color / });
+  const widthTrigger = page.getByRole('button', {
+    name: /^Stroke width [246]$/,
+  });
+  const styleTrigger = page.getByRole('button', {
+    name: /^Stroke style (solid|dashed|dotted)$/,
+  });
+  const colorBeforeSelect = await color.getAttribute('data-color');
+  const widthBeforeSelect = await widthTrigger.getAttribute('aria-label');
+  const styleBeforeSelect = await styleTrigger.getAttribute('aria-label');
   await select.click();
   await expect(select).toHaveAttribute('aria-pressed', 'true');
   await expect(interact).toHaveAttribute('aria-pressed', 'false');
   await expect(color).toBeDisabled();
-  for (const button of [...widthButtons, ...styleButtons]) {
-    await expect(button).toBeDisabled();
-  }
-  expect(await color.inputValue()).toBe(colorBeforeSelect);
-  expect(
-    await Promise.all(
-      widthButtons.map((button) => button.getAttribute('aria-pressed')),
-    ),
-  ).toEqual(widthsBeforeSelect);
-  expect(
-    await Promise.all(
-      styleButtons.map((button) => button.getAttribute('aria-pressed')),
-    ),
-  ).toEqual(stylesBeforeSelect);
+  await expect(widthTrigger).toBeDisabled();
+  await expect(styleTrigger).toBeDisabled();
+  expect(await color.getAttribute('data-color')).toBe(colorBeforeSelect);
+  expect(await widthTrigger.getAttribute('aria-label')).toBe(widthBeforeSelect);
+  expect(await styleTrigger.getAttribute('aria-label')).toBe(styleBeforeSelect);
 
   await interact.click();
   const increment = page.getByRole('button', {

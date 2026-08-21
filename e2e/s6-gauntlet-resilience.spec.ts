@@ -9,6 +9,7 @@ import {
   monitorPageDiagnostics,
   requiredBox,
   selectSquawkColor,
+  selectStrokeWidth,
   snapshotHostPage,
   type BrowserBox,
   type DocumentBox,
@@ -134,7 +135,7 @@ test('keeps article annotations anchored through scrolling and capture', async (
 
   await page.getByRole('button', { name: 'Arrow', exact: true }).click();
   await selectSquawkColor(page, '#f08c00');
-  await page.getByRole('button', { name: 'Stroke width 4' }).click();
+  await selectStrokeWidth(page, 4);
   await dragPointer(page, {
     constraint: 'free',
     start: {
@@ -148,7 +149,7 @@ test('keeps article annotations anchored through scrolling and capture', async (
   });
 
   await page.getByRole('button', { name: 'Pen', exact: true }).click();
-  await page.getByRole('button', { name: 'Stroke width 2' }).click();
+  await selectStrokeWidth(page, 2);
   const underlineY = paragraphBox.y + paragraphBox.height - 6;
   const underlineStart = { x: paragraphBox.x + 12, y: underlineY };
   const underlineEnd = {
@@ -277,7 +278,7 @@ test('erases, restores, and downloads on an insecure sticky page', async ({
     const host = page.locator('html > #squawk-root');
     await page.getByRole('button', { name: 'Rectangle', exact: true }).click();
     await selectSquawkColor(page, '#1971c2');
-    await page.getByRole('button', { name: 'Stroke width 6' }).click();
+    await selectStrokeWidth(page, 6);
     await drawRectangleAround(page, target);
 
     const rectangle = host.locator(

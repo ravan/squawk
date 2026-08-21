@@ -14,7 +14,7 @@ Squawk is a general-purpose Chrome extension that lays a transparent markup laye
 
 ## What it does
 
-Squawk provides nine tools without changing the page underneath:
+Squawk provides ten tools without changing the page underneath:
 
 - **Interact** — use the page normally while annotations remain visible.
 - **Select** — select and drag one annotation. A box and label created by the Element picker move together, and every move can be undone.
@@ -24,9 +24,10 @@ Squawk provides nine tools without changing the page underneath:
 - **Pen** — draw a freehand stroke.
 - **Text** — drag out a bounded text box; authored text wraps to its fixed width and grows downward when it needs more lines.
 - **Element picker** — snap a box and selector label to a DOM element.
+- **Eyedropper.** Click a visible page pixel to add its hex color beside a circled marker.
 - **Eraser** — remove an annotation, with undo available.
 
-The draggable Palette controls annotation color, opaque shape fill, stroke width, solid/dashed/dotted stroke style, text size, undo, clear-all, capture, and teardown. Style choices apply to newly drawn annotations without restyling existing work.
+The draggable Palette controls annotation color, opaque shape fill, stroke width, solid/dashed/dotted stroke style, text size, undo, clear-all, capture, and teardown. Stroke width, Stroke style, and Text size use separate compact dropdowns that preview each choice. Style choices apply to newly drawn annotations without restyling existing work.
 
 Undo is available from the Palette or with Ctrl/Cmd+Z for drawing, picking, moving, erasing, and clearing. Escape backs out one level at a time: it finishes or cancels the current interaction as appropriate, deselects the current annotation, returns to Interact, and finally closes Squawk.
 
@@ -49,10 +50,11 @@ Squawk has no host permissions and registers no always-on content script. Its pa
 1. Open the page you want to review.
 2. Select the Squawk extension action.
 3. Choose a drawing tool and annotate the page. Use **Fill shapes** for opaque rectangles, squares, or circles.
-4. Choose **Select** to reposition an annotation, or **Eraser** to remove one.
-5. Select **Camera** to copy the annotated viewport or download the PNG fallback.
-6. Paste, attach, or share the capture wherever you need it.
-7. Select **Close Squawk** when finished.
+4. Choose **Eyedropper** to label a page pixel with its hex color.
+5. Choose **Select** to reposition an annotation, or **Eraser** to remove one.
+6. Select **Camera** to copy the annotated viewport or download the PNG fallback.
+7. Paste, attach, or share the capture wherever you need it.
+8. Select **Close Squawk** when finished.
 
 ## Cold install from source
 

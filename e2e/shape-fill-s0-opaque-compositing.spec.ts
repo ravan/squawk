@@ -8,6 +8,8 @@ import {
   monitorPageDiagnostics,
   requiredBox,
   selectSquawkColor,
+  selectStrokeStyle,
+  selectStrokeWidth,
   snapshotHostPage,
 } from './browser-helpers';
 import { triggerExtensionAction } from './extension-driver';
@@ -345,28 +347,12 @@ test('projects opaque Fill exactly from Palette through preview and commit', asy
   const overlay = host.locator('svg.overlay');
   const shell = host.locator('.palette-shell');
   const toolbar = page.getByRole('toolbar', { name: 'Squawk palette' });
-  const color = page.getByRole('combobox', { name: 'Color', exact: true });
+  const color = page.getByRole('button', { name: /^Color / });
   const fill = page.getByRole('button', { name: 'Fill shapes', exact: true });
   const camera = page.getByRole('button', { name: 'Camera', exact: true });
   await expectHostPageUnchanged(page, hostSnapshot);
 
-  await expect(page.getByRole('combobox')).toHaveCount(1);
-  await expect(color).toHaveValue('#e03131');
-  expect(await color.locator('option').allTextContents()).toEqual([
-    '⚫ Black',
-    '🔴 Red',
-    '🟢 Green',
-    '🔵 Blue',
-    '🟠 Orange',
-    '⚪ White',
-  ]);
-  expect(
-    await color
-      .locator('option')
-      .evaluateAll((options) =>
-        options.map((option) => option.getAttribute('value')),
-      ),
-  ).toEqual(['#1e1e1e', '#e03131', '#2f9e44', '#1971c2', '#f08c00', '#ffffff']);
+  await expect(color).toHaveAttribute('data-color', '#e03131');
 
   await expect(fill).toHaveText('■');
   await expect(fill).toHaveAttribute('title', 'Fill shapes');
@@ -484,12 +470,8 @@ test('projects opaque Fill exactly from Palette through preview and commit', asy
   ).toHaveCount(1);
 
   await selectSquawkColor(page, '#2f9e44');
-  await page
-    .getByRole('button', { name: 'Stroke width 4', exact: true })
-    .click();
-  await page
-    .getByRole('button', { name: 'Stroke style dotted', exact: true })
-    .click();
+  await selectStrokeWidth(page, 4);
+  await selectStrokeStyle(page, 'dotted');
   await page.getByRole('button', { name: 'Ellipse', exact: true }).click();
   const circleStart = PointSchema.parse({ x: 500, y: 200 });
   const circleEnd = PointSchema.parse({ x: 640, y: 320 });

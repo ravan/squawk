@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
-import { dragPointer, requiredBox, selectSquawkColor } from './browser-helpers';
+import {
+  dragPointer,
+  requiredBox,
+  selectSquawkColor,
+  selectTextSize,
+} from './browser-helpers';
 import { triggerExtensionAction } from './extension-driver';
 import { expect, test } from './extension-fixture';
 
@@ -40,7 +45,7 @@ test('writes exact multiline text through the built extension', async ({
   const labels = await toolbar
     .getByRole('button')
     .evaluateAll((buttons) =>
-      buttons.slice(0, 10).map((button) => button.getAttribute('aria-label')),
+      buttons.slice(0, 11).map((button) => button.getAttribute('aria-label')),
     );
   expect(labels).toEqual([
     'Drag Squawk palette',
@@ -52,25 +57,34 @@ test('writes exact multiline text through the built extension', async ({
     'Pen',
     'Text',
     'Element picker',
+    'Eyedropper',
     'Eraser',
   ]);
 
-  for (const width of [2, 4, 6]) {
-    await expect(
-      page.getByRole('button', { name: `Stroke width ${String(width)}` }),
-    ).toBeVisible();
-  }
+  await expect(
+    page.getByRole('button', { name: 'Stroke width 2', exact: true }),
+  ).toBeVisible();
   const textTool = page.getByRole('button', { name: 'Text', exact: true });
   await textTool.click();
   await expect(textTool).toHaveAttribute('aria-pressed', 'true');
-  for (const size of ['S', 'M', 'L']) {
-    await expect(
-      page.getByRole('button', { name: `Text size ${size}` }),
-    ).toHaveText(size);
+  await expect(
+    page.getByRole('button', { name: 'Stroke width 2', exact: true }),
+  ).toBeDisabled();
+  const textSizeTrigger = page.getByRole('button', {
+    name: 'Text size S',
+    exact: true,
+  });
+  await expect(textSizeTrigger).toBeEnabled();
+  await textSizeTrigger.click();
+  const textSizeOptions = page.getByRole('option', { name: /^Text size / });
+  expect(await textSizeOptions.allTextContents()).toEqual(['S', 'M', 'L']);
+  for (const option of await textSizeOptions.all()) {
+    await expect(option.locator('.stroke-menu-label')).toBeHidden();
   }
+  await textSizeTrigger.click();
 
   await selectSquawkColor(page, '#e03131');
-  await page.getByRole('button', { name: 'Text size L' }).click();
+  await selectTextSize(page, 'L');
   const redCard = await requiredBox(page.locator('#target-red'));
   const firstPoint = {
     x: Math.round(redCard.x + redCard.width + 16),

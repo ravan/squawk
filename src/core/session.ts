@@ -15,6 +15,7 @@ import {
 import type {
   Annotation,
   AnnotationId,
+  ColorSampleCommitInput,
   EraserTarget,
   FillStyle,
   GesturePointerMove,
@@ -48,6 +49,7 @@ export function createSessionState(): SessionState {
       color: '#e03131',
       strokeWidth: 2,
       strokeStyle: 'solid',
+      textSize: 14,
       fillStyle: 'none',
     },
     annotations: [],
@@ -78,6 +80,8 @@ export function activeTool(state: SessionState): Tool {
     case 'picker-armed':
     case 'picker-hovering':
       return 'picker';
+    case 'eyedropper-armed':
+      return 'eyedropper';
     case 'eraser-armed':
     case 'eraser-hovering':
       return 'eraser';
@@ -102,6 +106,7 @@ export function overlayCursor(state: SessionState): ToolCursor {
     case 'text-armed':
     case 'text-drawing':
     case 'drawing':
+    case 'eyedropper-armed':
       return 'crosshair';
     case 'text-editing':
       return 'text';
@@ -132,6 +137,8 @@ function armedToolState(tool: Tool): ToolState {
       return { kind: 'text-armed' };
     case 'picker':
       return { kind: 'picker-armed' };
+    case 'eyedropper':
+      return { kind: 'eyedropper-armed' };
     case 'eraser':
       return { kind: 'eraser-armed' };
   }
@@ -312,15 +319,14 @@ export function setStrokeStyle(
   return { ...state, style: { ...state.style, strokeStyle } };
 }
 
-export function textSizeForStrokeWidth(strokeWidth: StrokeWidth): TextSize {
-  switch (strokeWidth) {
-    case 2:
-      return 14;
-    case 4:
-      return 18;
-    case 6:
-      return 24;
+export function setTextSize(
+  state: SessionState,
+  textSize: TextSize,
+): SessionState {
+  if (state.tool.kind === 'text-editing' || state.style.textSize === textSize) {
+    return state;
   }
+  return { ...state, style: { ...state.style, textSize } };
 }
 
 export function beginTextDrawing(
@@ -341,7 +347,7 @@ export function beginTextDrawing(
         origin: input.point,
         current: input.point,
         color: state.style.color,
-        size: textSizeForStrokeWidth(state.style.strokeWidth),
+        size: state.style.textSize,
       },
     },
   };
@@ -543,6 +549,7 @@ export function beginGesture(
     case 'text-editing':
     case 'picker-armed':
     case 'picker-hovering':
+    case 'eyedropper-armed':
     case 'eraser-armed':
     case 'eraser-hovering':
     case 'drawing':
@@ -816,6 +823,30 @@ export function commitPickerTarget(
   };
 }
 
+export function commitColorSample(
+  state: SessionState,
+  input: ColorSampleCommitInput,
+): SessionState {
+  if (state.tool.kind !== 'eyedropper-armed') {
+    return state;
+  }
+  const annotation: Annotation = {
+    id: input.annotationId,
+    selectionTargetId: input.selectionTargetId,
+    kind: 'color-sample',
+    x: input.point.x,
+    y: input.point.y,
+    sampledColor: input.sampledColor,
+    strokeWidth: state.style.strokeWidth,
+    strokeStyle: state.style.strokeStyle,
+  };
+  return {
+    ...state,
+    annotations: [...state.annotations, annotation],
+    history: [...state.history, { type: 'add', annotations: [annotation] }],
+  };
+}
+
 export function setEraserTarget(
   state: SessionState,
   target: EraserTarget,
@@ -1029,6 +1060,7 @@ export function escapeSession(state: SessionState): SessionEscapeOutcome {
     case 'text-armed':
     case 'picker-armed':
     case 'picker-hovering':
+    case 'eyedropper-armed':
     case 'eraser-armed':
     case 'eraser-hovering':
       return {

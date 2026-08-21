@@ -59,6 +59,11 @@ export const SquawkColorSchema = z.enum([
   '#ffffff',
 ]);
 export type SquawkColor = z.infer<typeof SquawkColorSchema>;
+export const SampledColorSchema = z
+  .string()
+  .regex(/^#[0-9A-F]{6}$/)
+  .brand<'SampledColor'>();
+export type SampledColor = z.infer<typeof SampledColorSchema>;
 
 export const FillStyleSchema = z.enum(['none', 'solid']);
 export type FillStyle = z.infer<typeof FillStyleSchema>;
@@ -315,6 +320,7 @@ export const ToolSchema = z.enum([
   'pen',
   'text',
   'picker',
+  'eyedropper',
   'eraser',
 ]);
 export type Tool = z.infer<typeof ToolSchema>;
@@ -433,12 +439,26 @@ export const PenAnnotationSchema = z
   .strict()
   .readonly();
 export type PenAnnotation = z.infer<typeof PenAnnotationSchema>;
+export const ColorSampleAnnotationSchema = z
+  .object({
+    ...AnnotationIdentityShape,
+    kind: z.literal('color-sample'),
+    x: CssPixelsSchema,
+    y: CssPixelsSchema,
+    sampledColor: SampledColorSchema,
+    strokeWidth: StrokeWidthSchema,
+    strokeStyle: StrokeStyleSchema,
+  })
+  .strict()
+  .readonly();
+export type ColorSampleAnnotation = z.infer<typeof ColorSampleAnnotationSchema>;
 export const AnnotationSchema = z
   .discriminatedUnion('kind', [
     RectangleAnnotationSchema,
     EllipseAnnotationSchema,
     ArrowAnnotationSchema,
     PenAnnotationSchema,
+    ColorSampleAnnotationSchema,
     TextAnnotationSchema,
     LabelAnnotationSchema,
   ])
@@ -544,6 +564,7 @@ export const StyleStateSchema = z
     color: SquawkColorSchema,
     strokeWidth: StrokeWidthSchema,
     strokeStyle: StrokeStyleSchema,
+    textSize: TextSizeSchema,
     fillStyle: FillStyleSchema,
   })
   .strict()
@@ -635,6 +656,10 @@ export const ToolStateSchema = z
       .strict()
       .readonly(),
     z
+      .object({ kind: z.literal('eyedropper-armed') })
+      .strict()
+      .readonly(),
+    z
       .object({
         kind: z.literal('picker-hovering'),
         target: PickerTargetSchema,
@@ -695,6 +720,18 @@ export const GesturePointerStartSchema = z
   .strict()
   .readonly();
 export type GesturePointerStart = z.infer<typeof GesturePointerStartSchema>;
+export const ColorSampleCommitInputSchema = z
+  .object({
+    annotationId: AnnotationIdSchema,
+    selectionTargetId: SelectionTargetIdSchema,
+    point: DocumentPointSchema,
+    sampledColor: SampledColorSchema,
+  })
+  .strict()
+  .readonly();
+export type ColorSampleCommitInput = z.infer<
+  typeof ColorSampleCommitInputSchema
+>;
 export const GesturePointerMoveSchema = z
   .object({
     pointerId: PointerIdSchema,
