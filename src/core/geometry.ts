@@ -40,6 +40,7 @@ export function translateAnnotation(
 ): Annotation {
   switch (annotation.kind) {
     case 'rect':
+    case 'ruler':
       return {
         ...annotation,
         x: annotation.x + delta.x,
@@ -70,6 +71,7 @@ export function translateAnnotation(
     case 'text':
     case 'label':
     case 'color-sample':
+    case 'font':
       return {
         ...annotation,
         x: annotation.x + delta.x,

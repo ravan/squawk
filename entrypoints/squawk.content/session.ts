@@ -15,6 +15,7 @@ import {
   setColor,
   setEraserTarget,
   setFillStyle,
+  setFontTarget,
   setPickerTarget,
   setStrokeStyle,
   setStrokeWidth,
@@ -112,6 +113,7 @@ export function mountSquawkSession(): SquawkSession {
     updateState(commitTextEdit(state));
     updateState(setEraserTarget(state, { kind: 'none' }));
     updateState(setPickerTarget(state, { kind: 'none' }));
+    updateState(setFontTarget(state, { kind: 'none' }));
     toast.hide();
     void captureController.capture();
   }

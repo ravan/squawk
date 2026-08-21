@@ -5,6 +5,9 @@ import {
   ColorSampleAnnotationSchema,
   DeleteOpSchema,
   FillStyleSchema,
+  FontAnnotationSchema,
+  FontCommitInputSchema,
+  FontTargetSchema,
   GesturePointerStartSchema,
   LabelAnnotationSchema,
   MoveOpSchema,
@@ -39,6 +42,15 @@ const rectangle = {
   h: 40,
   ...style,
   fillStyle: 'solid',
+};
+const ruler = {
+  id: 'ruler-1',
+  selectionTargetId: 'target-ruler-1',
+  kind: 'ruler',
+  x: 256,
+  y: 50,
+  w: 764,
+  h: 307,
 };
 const ellipse = {
   id: 'ellipse-1',
@@ -109,8 +121,32 @@ const colorSample = {
   strokeWidth: 4,
   strokeStyle: 'dashed',
 };
+const fontTarget = {
+  x: 30,
+  y: 40,
+  w: 240,
+  h: 48,
+  fontSize: '18px',
+  fontFamily: 'Inter, sans-serif',
+};
+const font = {
+  id: 'font-1',
+  selectionTargetId: 'target-font-1',
+  kind: 'font',
+  ...fontTarget,
+};
 
-const annotations = [rectangle, ellipse, arrow, pen, text, label, colorSample];
+const annotations = [
+  rectangle,
+  ruler,
+  ellipse,
+  arrow,
+  pen,
+  text,
+  label,
+  colorSample,
+  font,
+];
 
 describe('domain model', () => {
   it('domain model requires explicit Selection target identity and exact Move states', () => {
@@ -125,11 +161,13 @@ describe('domain model', () => {
       'interact',
       'select',
       'rect',
+      'ruler',
       'ellipse',
       'arrow',
       'pen',
       'text',
       'picker',
+      'font',
       'eyedropper',
       'eraser',
     ]);
@@ -304,6 +342,39 @@ describe('domain model', () => {
     }
   });
 
+  it('keeps ruler annotations, drafts, and previews independent of drawing style', () => {
+    const draft = {
+      kind: 'ruler',
+      pointerId: 1,
+      annotationId: 'ruler-1',
+      selectionTargetId: 'target-ruler-1',
+      origin: { x: 256, y: 50 },
+      current: { x: 1020, y: 357 },
+      constraint: 'free',
+    };
+    const preview = {
+      id: 'ruler-1',
+      kind: 'ruler-preview',
+      x: 256,
+      y: 50,
+      w: 764,
+      h: 307,
+    };
+
+    expect(AnnotationSchema.parse(ruler)).toEqual(ruler);
+    expect(ShapeDraftSchema.parse(draft)).toEqual(draft);
+    expect(PreviewAnnotationSchema.parse(preview)).toEqual(preview);
+    for (const value of [ruler, draft, preview]) {
+      expect(() =>
+        value.kind === 'ruler'
+          ? AnnotationSchema.parse({ ...value, color: '#e03131' })
+          : value.kind === 'ruler-preview'
+            ? PreviewAnnotationSchema.parse({ ...value, color: '#e03131' })
+            : ShapeDraftSchema.parse({ ...value, color: '#e03131' }),
+      ).toThrow();
+    }
+  });
+
   it('requires Fill only on closed shapes, their drafts, previews, and style state', () => {
     for (const annotation of [rectangle, ellipse]) {
       expect(() =>
@@ -317,7 +388,7 @@ describe('domain model', () => {
       ).toThrow();
     }
 
-    for (const annotation of [arrow, pen, text, label]) {
+    for (const annotation of [ruler, arrow, pen, text, label]) {
       expect(() =>
         AnnotationSchema.parse({ ...annotation, fillStyle: 'solid' }),
       ).toThrow();
@@ -593,6 +664,42 @@ describe('domain model', () => {
     expect(OverlayItemSchema.parse(highlight)).toEqual(highlight);
   });
 
+  it('parses computed font targets, annotations, states, and highlights', () => {
+    expect(ToolSchema.parse('font')).toBe('font');
+    expect(FontTargetSchema.parse(fontTarget)).toEqual(fontTarget);
+    expect(FontAnnotationSchema.parse(font)).toEqual(font);
+    expect(AnnotationSchema.parse(font)).toEqual(font);
+    expect(ToolStateSchema.parse({ kind: 'font-armed' })).toEqual({
+      kind: 'font-armed',
+    });
+    expect(
+      ToolStateSchema.parse({ kind: 'font-hovering', target: fontTarget }),
+    ).toEqual({ kind: 'font-hovering', target: fontTarget });
+    const highlight = { phase: 'font-highlight', target: fontTarget };
+    expect(OverlayItemSchema.parse(highlight)).toEqual(highlight);
+    expect(
+      FontCommitInputSchema.parse({
+        annotationId: 'font-1',
+        selectionTargetId: 'target-font-1',
+      }),
+    ).toEqual({
+      annotationId: 'font-1',
+      selectionTargetId: 'target-font-1',
+    });
+  });
+
+  it('rejects malformed computed font values', () => {
+    expect(() =>
+      FontTargetSchema.parse({ ...fontTarget, fontSize: '1rem' }),
+    ).toThrow();
+    expect(() =>
+      FontTargetSchema.parse({ ...fontTarget, fontFamily: '' }),
+    ).toThrow();
+    expect(() =>
+      FontAnnotationSchema.parse({ ...font, color: '#e03131' }),
+    ).toThrow();
+  });
+
   it('requires Selection target identity on creation inputs', () => {
     const textStart = {
       pointerId: 1,
@@ -672,11 +779,13 @@ describe('domain model', () => {
       { kind: 'interact' },
       { kind: 'select-armed' },
       { kind: 'rect-armed' },
+      { kind: 'ruler-armed' },
       { kind: 'ellipse-armed' },
       { kind: 'arrow-armed' },
       { kind: 'pen-armed' },
       { kind: 'text-armed' },
       { kind: 'picker-armed' },
+      { kind: 'font-armed' },
       { kind: 'eraser-armed' },
     ];
 

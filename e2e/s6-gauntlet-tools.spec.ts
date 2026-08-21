@@ -126,12 +126,14 @@ test('runs every tool and Palette action on a GitHub-like page', async ({
     ['Interact', 'auto'],
     ['Select', 'default'],
     ['Rectangle', 'crosshair'],
+    ['Ruler', 'crosshair'],
     ['Ellipse', 'crosshair'],
     ['Arrow', 'crosshair'],
     ['Pen', 'crosshair'],
     ['Text', 'crosshair'],
     ['Eyedropper', 'crosshair'],
     ['Element picker', 'cell'],
+    ['Font inspector', 'cell'],
     ['Eraser', 'not-allowed'],
   ];
   for (const [tool, cursor] of cursorCases) {

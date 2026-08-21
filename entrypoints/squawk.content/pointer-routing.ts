@@ -20,6 +20,7 @@ import {
   cancelTextDrawing,
   commitGesture,
   commitColorSample,
+  commitFontTarget,
   commitMove,
   commitPickerTarget,
   commitTextEdit,
@@ -28,6 +29,7 @@ import {
   finishTextDrawing,
   moveGesture,
   setEraserTarget,
+  setFontTarget,
   setPickerTarget,
   updateMove,
   updateTextDrawing,
@@ -133,6 +135,7 @@ export function bindPointerRouting(
           return;
         }
         case 'rect-armed':
+        case 'ruler-armed':
         case 'ellipse-armed':
         case 'arrow-armed':
         case 'pen-armed': {
@@ -177,6 +180,24 @@ export function bindPointerRouting(
             commitPickerTarget(hovering, {
               rectangleAnnotationId: createAnnotationId(),
               labelAnnotationId: createAnnotationId(),
+              selectionTargetId: createSelectionTargetId(),
+            }),
+          );
+          event.preventDefault();
+          return;
+        }
+        case 'font-armed':
+        case 'font-hovering': {
+          const selection = elementPicker.fontTargetAt(
+            viewportPointFromPointer(event),
+          );
+          if (selection.kind === 'none') {
+            updateState(setFontTarget(current, selection));
+            return;
+          }
+          updateState(
+            commitFontTarget(setFontTarget(current, selection), {
+              annotationId: createAnnotationId(),
               selectionTargetId: createSelectionTargetId(),
             }),
           );
@@ -282,6 +303,18 @@ export function bindPointerRouting(
         );
         return;
       }
+      if (
+        current.tool.kind === 'font-armed' ||
+        current.tool.kind === 'font-hovering'
+      ) {
+        updateState(
+          setFontTarget(
+            current,
+            elementPicker.fontTargetAt(viewportPointFromPointer(event)),
+          ),
+        );
+        return;
+      }
       if (current.tool.kind !== 'drawing') {
         return;
       }
@@ -378,9 +411,12 @@ export function bindPointerRouting(
         return;
       }
       updateState(
-        setPickerTarget(setEraserTarget(state(), { kind: 'none' }), {
-          kind: 'none',
-        }),
+        setFontTarget(
+          setPickerTarget(setEraserTarget(state(), { kind: 'none' }), {
+            kind: 'none',
+          }),
+          { kind: 'none' },
+        ),
       );
     },
     { signal },

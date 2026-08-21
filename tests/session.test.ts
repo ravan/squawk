@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   AnnotationIdSchema,
+  FontTargetSchema,
   PickerTargetSchema,
   PointerIdSchema,
   SampledColorSchema,
@@ -23,6 +24,7 @@ import {
   clearSession,
   commitGesture,
   commitColorSample,
+  commitFontTarget,
   commitMove,
   commitPickerTarget,
   commitTextEdit,
@@ -37,6 +39,7 @@ import {
   setColor,
   setEraserTarget,
   setFillStyle,
+  setFontTarget,
   setPickerTarget,
   setStrokeStyle,
   setStrokeWidth,
@@ -51,6 +54,7 @@ import {
 const pointer1 = PointerIdSchema.parse(1);
 const pointer2 = PointerIdSchema.parse(2);
 const rect1 = AnnotationIdSchema.parse('rect-1');
+const ruler1 = AnnotationIdSchema.parse('ruler-1');
 const ellipse1 = AnnotationIdSchema.parse('ellipse-1');
 const arrow1 = AnnotationIdSchema.parse('arrow-1');
 const pen1 = AnnotationIdSchema.parse('pen-1');
@@ -58,7 +62,9 @@ const text1 = AnnotationIdSchema.parse('text-1');
 const rectPick1 = AnnotationIdSchema.parse('rect-pick-1');
 const labelPick1 = AnnotationIdSchema.parse('label-pick-1');
 const colorSample1 = AnnotationIdSchema.parse('color-sample-1');
+const font1 = AnnotationIdSchema.parse('font-1');
 const targetRect1 = SelectionTargetIdSchema.parse('target-rect-1');
+const targetRuler1 = SelectionTargetIdSchema.parse('target-ruler-1');
 const targetEllipse1 = SelectionTargetIdSchema.parse('target-ellipse-1');
 const targetArrow1 = SelectionTargetIdSchema.parse('target-arrow-1');
 const targetPen1 = SelectionTargetIdSchema.parse('target-pen-1');
@@ -67,6 +73,7 @@ const targetPicker1 = SelectionTargetIdSchema.parse('target-picker-1');
 const targetColorSample1 = SelectionTargetIdSchema.parse(
   'target-color-sample-1',
 );
+const targetFont1 = SelectionTargetIdSchema.parse('target-font-1');
 const pickerTarget = PickerTargetSchema.parse({
   x: 10,
   y: 20,
@@ -74,13 +81,23 @@ const pickerTarget = PickerTargetSchema.parse({
   h: 30,
   selector: 'a.nav-link',
 });
+const fontTarget = FontTargetSchema.parse({
+  x: 30,
+  y: 40,
+  w: 240,
+  h: 48,
+  fontSize: '18px',
+  fontFamily: 'Inter, sans-serif',
+});
 
-type DrawingTool = 'rect' | 'ellipse' | 'arrow' | 'pen';
+type DrawingTool = 'rect' | 'ruler' | 'ellipse' | 'arrow' | 'pen';
 
 function selectionTargetIdForTool(tool: DrawingTool): SelectionTargetId {
   switch (tool) {
     case 'rect':
       return targetRect1;
+    case 'ruler':
+      return targetRuler1;
     case 'ellipse':
       return targetEllipse1;
     case 'arrow':
@@ -394,6 +411,9 @@ describe('Session state', () => {
       'default',
     );
     expect(overlayCursor(setTool(createSessionState(), 'rect'))).toBe(
+      'crosshair',
+    );
+    expect(overlayCursor(setTool(createSessionState(), 'ruler'))).toBe(
       'crosshair',
     );
     expect(overlayCursor(setTool(createSessionState(), 'ellipse'))).toBe(
@@ -1023,6 +1043,55 @@ describe('Session state', () => {
     expect(escapeSession(interact.state)).toEqual({ kind: 'teardown' });
   });
 
+  it('commits computed font details independently of drawing style', () => {
+    const armed = setTool(setColor(createSessionState(), '#e03131'), 'font');
+    expect(armed.tool).toEqual({ kind: 'font-armed' });
+    expect(activeTool(armed)).toBe('font');
+    expect(overlayCursor(armed)).toBe('cell');
+    expect(setFontTarget(armed, { kind: 'none' })).toBe(armed);
+
+    const hovering = setFontTarget(armed, {
+      kind: 'element',
+      target: fontTarget,
+    });
+    expect(hovering.tool).toEqual({
+      kind: 'font-hovering',
+      target: fontTarget,
+    });
+    expect(overlayItems(hovering)).toEqual([
+      { phase: 'font-highlight', target: fontTarget },
+    ]);
+    expect(
+      setFontTarget(hovering, { kind: 'element', target: fontTarget }),
+    ).toBe(hovering);
+
+    const committed = commitFontTarget(hovering, {
+      annotationId: font1,
+      selectionTargetId: targetFont1,
+    });
+    const annotation = {
+      id: 'font-1',
+      selectionTargetId: 'target-font-1',
+      kind: 'font',
+      ...fontTarget,
+    };
+    expect(committed).toMatchObject({
+      tool: { kind: 'font-armed' },
+      annotations: [annotation],
+      history: [{ type: 'add', annotations: [annotation] }],
+    });
+    expect(undoSession(committed)).toMatchObject({
+      annotations: [],
+      history: [],
+    });
+    expect(
+      commitFontTarget(armed, {
+        annotationId: font1,
+        selectionTargetId: targetFont1,
+      }),
+    ).toBe(armed);
+  });
+
   it('commits a styled rectangle and exposes its preview', () => {
     let state = createSessionState();
     state = setTool(state, 'rect');
@@ -1093,6 +1162,57 @@ describe('Session state', () => {
         opacity: 1,
         selectionAffordance: 'none',
       },
+    ]);
+  });
+
+  it('commits a measured ruler independently of the live drawing style', () => {
+    let state = setStrokeStyle(
+      setStrokeWidth(
+        setColor(setFillStyle(createSessionState(), 'solid'), '#1971c2'),
+        6,
+      ),
+      'dashed',
+    );
+    state = beginGesture(setTool(state, 'ruler'), {
+      pointerId: pointer1,
+      annotationId: ruler1,
+      selectionTargetId: targetRuler1,
+      point: { x: 256, y: 50 },
+    });
+    state = moveGesture(state, {
+      pointerId: pointer1,
+      point: { x: 1020, y: 357 },
+      constraint: 'free',
+    });
+
+    expect(overlayItems(state).at(-1)).toEqual({
+      phase: 'preview',
+      opacity: 1,
+      annotation: {
+        id: 'ruler-1',
+        kind: 'ruler-preview',
+        x: 256,
+        y: 50,
+        w: 764,
+        h: 307,
+      },
+    });
+
+    state = commitGesture(state, pointer1);
+    expect(state.tool).toEqual({ kind: 'ruler-armed' });
+    expect(state.annotations).toEqual([
+      {
+        id: 'ruler-1',
+        selectionTargetId: 'target-ruler-1',
+        kind: 'ruler',
+        x: 256,
+        y: 50,
+        w: 764,
+        h: 307,
+      },
+    ]);
+    expect(state.history).toEqual([
+      { type: 'add', annotations: state.annotations },
     ]);
   });
 
@@ -1438,6 +1558,14 @@ describe('Session state', () => {
       ),
       committedGesture(
         createSessionState(),
+        'ruler',
+        ruler1,
+        pointer1,
+        { x: 10, y: 20 },
+        [{ x: 50, y: 80 }],
+      ),
+      committedGesture(
+        createSessionState(),
         'ellipse',
         ellipse1,
         pointer1,
@@ -1517,6 +1645,14 @@ describe('Session state', () => {
       ),
       committedGesture(
         createSessionState(),
+        'ruler',
+        ruler1,
+        pointer1,
+        { x: 10, y: 20 },
+        [{ x: 10, y: 80 }],
+      ),
+      committedGesture(
+        createSessionState(),
         'ellipse',
         ellipse1,
         pointer1,
@@ -1557,6 +1693,7 @@ describe('Session state', () => {
   it('applies the exact Escape ladder to every S3 draft and eraser hover', () => {
     const drafts = [
       { state: drawingGesture('rect', rect1), armed: 'rect-armed' },
+      { state: drawingGesture('ruler', ruler1), armed: 'ruler-armed' },
       { state: drawingGesture('ellipse', ellipse1), armed: 'ellipse-armed' },
       { state: drawingGesture('arrow', arrow1), armed: 'arrow-armed' },
       { state: drawingGesture('pen', pen1), armed: 'pen-armed' },

@@ -35,6 +35,15 @@ describe('translateAnnotation', () => {
       strokeStyle: 'dashed',
       fillStyle: 'solid',
     });
+    const ruler = AnnotationSchema.parse({
+      id: 'ruler-1',
+      selectionTargetId: 'target-ruler-1',
+      kind: 'ruler',
+      x: 256,
+      y: 50,
+      w: 764,
+      h: 307,
+    });
     const ellipse = AnnotationSchema.parse({
       id: 'ellipse-1',
       selectionTargetId: 'target-ellipse-1',
@@ -93,14 +102,37 @@ describe('translateAnnotation', () => {
       text: 'main > button',
       color: '#1971c2',
     });
-    const originals = [rectangle, ellipse, arrow, pen, text, label].map(
-      (annotation) => structuredClone(annotation),
-    );
+    const font = AnnotationSchema.parse({
+      id: 'font-1',
+      selectionTargetId: 'target-font-1',
+      kind: 'font',
+      x: 30,
+      y: 40,
+      w: 240,
+      h: 48,
+      fontSize: '18px',
+      fontFamily: 'Inter, sans-serif',
+    });
+    const originals = [
+      rectangle,
+      ruler,
+      ellipse,
+      arrow,
+      pen,
+      text,
+      label,
+      font,
+    ].map((annotation) => structuredClone(annotation));
 
     expect(translateAnnotation(rectangle, delta)).toEqual({
       ...rectangle,
       x: 17.5,
       y: 16.75,
+    });
+    expect(translateAnnotation(ruler, delta)).toEqual({
+      ...ruler,
+      x: 263.5,
+      y: 46.75,
     });
     expect(translateAnnotation(ellipse, delta)).toEqual({
       ...ellipse,
@@ -131,7 +163,14 @@ describe('translateAnnotation', () => {
       x: 17.5,
       y: 16.75,
     });
-    expect([rectangle, ellipse, arrow, pen, text, label]).toEqual(originals);
+    expect(translateAnnotation(font, delta)).toEqual({
+      ...font,
+      x: 37.5,
+      y: 36.75,
+    });
+    expect([rectangle, ruler, ellipse, arrow, pen, text, label, font]).toEqual(
+      originals,
+    );
   });
 });
 

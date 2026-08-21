@@ -369,6 +369,7 @@ test('projects opaque Fill exactly from Palette through preview and commit', asy
     { tool: 'Pen', disabled: true },
     { tool: 'Text', disabled: true },
     { tool: 'Element picker', disabled: true },
+    { tool: 'Font inspector', disabled: true },
     { tool: 'Eraser', disabled: true },
   ];
   for (const { tool, disabled } of fillAvailability) {

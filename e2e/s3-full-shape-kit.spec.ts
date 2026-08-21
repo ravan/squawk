@@ -20,11 +20,13 @@ test('draws and erases the full shape kit through the built extension', async ({
   const toolNames = [
     'Interact',
     'Rectangle',
+    'Ruler',
     'Ellipse',
     'Arrow',
     'Pen',
     'Text',
     'Element picker',
+    'Font inspector',
     'Eyedropper',
     'Eraser',
   ];
@@ -32,27 +34,31 @@ test('draws and erases the full shape kit through the built extension', async ({
   const labels = await toolbar
     .getByRole('button')
     .evaluateAll((buttons) =>
-      buttons.slice(0, 11).map((button) => button.getAttribute('aria-label')),
+      buttons.slice(0, 13).map((button) => button.getAttribute('aria-label')),
     );
   expect(labels).toEqual([
     'Drag Squawk palette',
     'Interact',
     'Select',
     'Rectangle',
+    'Ruler',
     'Ellipse',
     'Arrow',
     'Pen',
     'Text',
     'Element picker',
+    'Font inspector',
     'Eyedropper',
     'Eraser',
   ]);
   for (const name of [
     'Ellipse',
+    'Ruler',
     'Arrow',
     'Pen',
     'Text',
     'Element picker',
+    'Font inspector',
     'Eyedropper',
     'Eraser',
   ]) {
@@ -170,4 +176,34 @@ test('draws and erases the full shape kit through the built extension', async ({
   await page.keyboard.press('Control+z');
   await expect(pen).toHaveCount(1);
   expect(await annotationIds(committed)).toEqual(committedOrder);
+
+  await page.getByRole('button', { name: 'Ruler', exact: true }).click();
+  await expectSelectedTool('Ruler');
+  await dragPointer(page, {
+    constraint: 'free',
+    start: { x: 256, y: 50 },
+    end: { x: 1020, y: 357 },
+  });
+
+  const ruler = page.locator(
+    '#squawk-root svg.overlay g.annotation[data-phase="committed"][data-kind="ruler"]',
+  );
+  await expect(ruler).toHaveCount(1);
+  await expect(ruler.locator('.ruler-rectangle')).toHaveAttribute('x', '256');
+  await expect(ruler.locator('.ruler-rectangle')).toHaveAttribute(
+    'width',
+    '764',
+  );
+  const measurements = await ruler
+    .locator('.ruler-label')
+    .evaluateAll((labels) =>
+      labels.map((label) => ({
+        measurement: label.getAttribute('data-measurement'),
+        text: label.textContent,
+      })),
+    );
+  expect(measurements).toEqual([
+    { measurement: 'width', text: '(w) 764px' },
+    { measurement: 'height', text: '(h) 307px' },
+  ]);
 });

@@ -524,6 +524,15 @@ export function createPalette(
     { signal },
   );
 
+  const ruler = createButton('Ruler', '⌗', 'Measure an area');
+  ruler.addEventListener(
+    'click',
+    () => {
+      callbacks.setTool('ruler');
+    },
+    { signal },
+  );
+
   const ellipse = createButton('Ellipse', '○');
   ellipse.addEventListener(
     'click',
@@ -569,6 +578,19 @@ export function createPalette(
     { signal },
   );
 
+  const font = createButton(
+    'Font inspector',
+    'Aa',
+    'Inspect font size and family',
+  );
+  font.addEventListener(
+    'click',
+    () => {
+      callbacks.setTool('font');
+    },
+    { signal },
+  );
+
   const eyedropper = createButton('Eyedropper', '⊙', 'Sample a page color');
   eyedropper.addEventListener(
     'click',
@@ -594,11 +616,13 @@ export function createPalette(
     interact,
     select,
     rectangle,
+    ruler,
     ellipse,
     arrow,
     pen,
     text,
     picker,
+    font,
     eyedropper,
     eraser,
   );
@@ -609,11 +633,13 @@ export function createPalette(
     { tool: 'interact', button: interact },
     { tool: 'select', button: select },
     { tool: 'rect', button: rectangle },
+    { tool: 'ruler', button: ruler },
     { tool: 'ellipse', button: ellipse },
     { tool: 'arrow', button: arrow },
     { tool: 'pen', button: pen },
     { tool: 'text', button: text },
     { tool: 'picker', button: picker },
+    { tool: 'font', button: font },
     { tool: 'eyedropper', button: eyedropper },
     { tool: 'eraser', button: eraser },
   ];
@@ -770,7 +796,10 @@ export function createPalette(
         button.setAttribute('aria-pressed', String(selectedTool === tool));
       }
 
-      const selectActive = selectedTool === 'select';
+      const styleLocked =
+        selectedTool === 'select' ||
+        selectedTool === 'ruler' ||
+        selectedTool === 'font';
       const selectedColor = COLOR_OPTIONS.find(
         ({ color }) => color === state.style.color,
       );
@@ -781,19 +810,19 @@ export function createPalette(
       colorDropdown.trigger.ariaLabel = colorLabel;
       colorDropdown.trigger.title = colorLabel;
       colorDropdown.trigger.dataset.color = state.style.color;
-      colorDropdown.trigger.disabled = selectActive;
+      colorDropdown.trigger.disabled = styleLocked;
       colorDropdown.swatch.style.setProperty(
         '--squawk-color',
         state.style.color,
       );
       for (const entry of colorDropdown.entries) {
-        entry.button.disabled = selectActive;
+        entry.button.disabled = styleLocked;
         entry.button.setAttribute(
           'aria-selected',
           String(entry.color === state.style.color),
         );
       }
-      if (selectActive) {
+      if (styleLocked) {
         colorDropdown.close();
       }
 
@@ -810,7 +839,7 @@ export function createPalette(
       const widthLabel = `Stroke width ${String(state.style.strokeWidth)}`;
       strokeWidthDropdown.trigger.ariaLabel = widthLabel;
       strokeWidthDropdown.trigger.title = widthLabel;
-      strokeWidthDropdown.trigger.disabled = textActive || selectActive;
+      strokeWidthDropdown.trigger.disabled = textActive || styleLocked;
       strokeWidthDropdown.triggerSample.render(
         'solid',
         state.style.strokeWidth,
@@ -824,7 +853,7 @@ export function createPalette(
         const label = `Stroke width ${String(entry.value)}`;
         entry.button.ariaLabel = label;
         entry.button.title = label;
-        entry.button.disabled = textActive || selectActive;
+        entry.button.disabled = textActive || styleLocked;
         entry.button.setAttribute(
           'aria-selected',
           String(state.style.strokeWidth === entry.value),
@@ -835,11 +864,11 @@ export function createPalette(
         entry.label.textContent = '';
         entry.label.hidden = true;
       }
-      if (textActive || selectActive) {
+      if (textActive || styleLocked) {
         strokeWidthDropdown.close();
       }
 
-      const styleDisabled = textActive || selectActive;
+      const styleDisabled = textActive || styleLocked;
       const styleLabel = `Stroke style ${state.style.strokeStyle}`;
       strokeStyleDropdown.trigger.ariaLabel = styleLabel;
       strokeStyleDropdown.trigger.title = styleLabel;

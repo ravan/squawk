@@ -25,6 +25,18 @@ export const SelectorLabelSchema = z
 export type SelectorLabel = z.infer<typeof SelectorLabelSchema>;
 export const SvelteLocSchema = z.string().min(1).max(80).brand<'SvelteLoc'>();
 export type SvelteLoc = z.infer<typeof SvelteLocSchema>;
+export const FontSizeCssSchema = z
+  .string()
+  .regex(/^\d+(?:\.\d+)?px$/)
+  .brand<'FontSizeCss'>();
+export type FontSizeCss = z.infer<typeof FontSizeCssSchema>;
+export const FontFamilySchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(500)
+  .brand<'FontFamily'>();
+export type FontFamily = z.infer<typeof FontFamilySchema>;
 
 export const ViewportRectSchema = z
   .object({
@@ -248,6 +260,42 @@ export const PickerCommitInputSchema = z
   .readonly();
 export type PickerCommitInput = z.infer<typeof PickerCommitInputSchema>;
 
+export const FontTargetSchema = z
+  .object({
+    x: CssPixelsSchema,
+    y: CssPixelsSchema,
+    w: CssPixelsSchema.positive(),
+    h: CssPixelsSchema.positive(),
+    fontSize: FontSizeCssSchema,
+    fontFamily: FontFamilySchema,
+  })
+  .strict()
+  .readonly();
+export type FontTarget = z.infer<typeof FontTargetSchema>;
+
+export const FontTargetSelectionSchema = z
+  .discriminatedUnion('kind', [
+    z
+      .object({ kind: z.literal('none') })
+      .strict()
+      .readonly(),
+    z
+      .object({ kind: z.literal('element'), target: FontTargetSchema })
+      .strict()
+      .readonly(),
+  ])
+  .readonly();
+export type FontTargetSelection = z.infer<typeof FontTargetSelectionSchema>;
+
+export const FontCommitInputSchema = z
+  .object({
+    annotationId: AnnotationIdSchema,
+    selectionTargetId: SelectionTargetIdSchema,
+  })
+  .strict()
+  .readonly();
+export type FontCommitInput = z.infer<typeof FontCommitInputSchema>;
+
 export const TextDrawingDraftSchema = z
   .object({
     pointerId: PointerIdSchema,
@@ -315,11 +363,13 @@ export const ToolSchema = z.enum([
   'interact',
   'select',
   'rect',
+  'ruler',
   'ellipse',
   'arrow',
   'pen',
   'text',
   'picker',
+  'font',
   'eyedropper',
   'eraser',
 ]);
@@ -403,6 +453,18 @@ export const RectangleAnnotationSchema = z
   .strict()
   .readonly();
 export type RectangleAnnotation = z.infer<typeof RectangleAnnotationSchema>;
+export const RulerAnnotationSchema = z
+  .object({
+    ...AnnotationIdentityShape,
+    kind: z.literal('ruler'),
+    x: CssPixelsSchema,
+    y: CssPixelsSchema,
+    w: CssPixelsSchema.positive(),
+    h: CssPixelsSchema.positive(),
+  })
+  .strict()
+  .readonly();
+export type RulerAnnotation = z.infer<typeof RulerAnnotationSchema>;
 export const EllipseAnnotationSchema = z
   .object({
     ...StrokeAnnotationShape,
@@ -452,13 +514,29 @@ export const ColorSampleAnnotationSchema = z
   .strict()
   .readonly();
 export type ColorSampleAnnotation = z.infer<typeof ColorSampleAnnotationSchema>;
+export const FontAnnotationSchema = z
+  .object({
+    ...AnnotationIdentityShape,
+    kind: z.literal('font'),
+    x: CssPixelsSchema,
+    y: CssPixelsSchema,
+    w: CssPixelsSchema.positive(),
+    h: CssPixelsSchema.positive(),
+    fontSize: FontSizeCssSchema,
+    fontFamily: FontFamilySchema,
+  })
+  .strict()
+  .readonly();
+export type FontAnnotation = z.infer<typeof FontAnnotationSchema>;
 export const AnnotationSchema = z
   .discriminatedUnion('kind', [
     RectangleAnnotationSchema,
+    RulerAnnotationSchema,
     EllipseAnnotationSchema,
     ArrowAnnotationSchema,
     PenAnnotationSchema,
     ColorSampleAnnotationSchema,
+    FontAnnotationSchema,
     TextAnnotationSchema,
     LabelAnnotationSchema,
   ])
@@ -584,6 +662,18 @@ export const ShapeDraftSchema = z
       .readonly(),
     z
       .object({
+        kind: z.literal('ruler'),
+        pointerId: PointerIdSchema,
+        annotationId: AnnotationIdSchema,
+        selectionTargetId: SelectionTargetIdSchema,
+        origin: DocumentPointSchema,
+        current: DocumentPointSchema,
+        constraint: DrawingConstraintSchema,
+      })
+      .strict()
+      .readonly(),
+    z
+      .object({
         ...DragDraftShape,
         ...FillShape,
         kind: z.literal('ellipse'),
@@ -622,6 +712,10 @@ export const ToolStateSchema = z
       .strict()
       .readonly(),
     z
+      .object({ kind: z.literal('ruler-armed') })
+      .strict()
+      .readonly(),
+    z
       .object({ kind: z.literal('ellipse-armed') })
       .strict()
       .readonly(),
@@ -656,6 +750,10 @@ export const ToolStateSchema = z
       .strict()
       .readonly(),
     z
+      .object({ kind: z.literal('font-armed') })
+      .strict()
+      .readonly(),
+    z
       .object({ kind: z.literal('eyedropper-armed') })
       .strict()
       .readonly(),
@@ -663,6 +761,13 @@ export const ToolStateSchema = z
       .object({
         kind: z.literal('picker-hovering'),
         target: PickerTargetSchema,
+      })
+      .strict()
+      .readonly(),
+    z
+      .object({
+        kind: z.literal('font-hovering'),
+        target: FontTargetSchema,
       })
       .strict()
       .readonly(),
@@ -819,6 +924,17 @@ export const PreviewAnnotationSchema = z
       .readonly(),
     z
       .object({
+        id: AnnotationIdSchema,
+        kind: z.literal('ruler-preview'),
+        x: CssPixelsSchema,
+        y: CssPixelsSchema,
+        w: CssPixelsSchema.nonnegative(),
+        h: CssPixelsSchema.nonnegative(),
+      })
+      .strict()
+      .readonly(),
+    z
+      .object({
         ...PreviewStrokeShape,
         ...FillShape,
         kind: z.literal('ellipse-preview'),
@@ -890,6 +1006,13 @@ export const OverlayItemSchema = z
         color: SquawkColorSchema,
         strokeWidth: StrokeWidthSchema,
         strokeStyle: StrokeStyleSchema,
+      })
+      .strict()
+      .readonly(),
+    z
+      .object({
+        phase: z.literal('font-highlight'),
+        target: FontTargetSchema,
       })
       .strict()
       .readonly(),

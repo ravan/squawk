@@ -45,18 +45,20 @@ test('writes exact multiline text through the built extension', async ({
   const labels = await toolbar
     .getByRole('button')
     .evaluateAll((buttons) =>
-      buttons.slice(0, 11).map((button) => button.getAttribute('aria-label')),
+      buttons.slice(0, 13).map((button) => button.getAttribute('aria-label')),
     );
   expect(labels).toEqual([
     'Drag Squawk palette',
     'Interact',
     'Select',
     'Rectangle',
+    'Ruler',
     'Ellipse',
     'Arrow',
     'Pen',
     'Text',
     'Element picker',
+    'Font inspector',
     'Eyedropper',
     'Eraser',
   ]);

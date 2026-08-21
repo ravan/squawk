@@ -12,6 +12,8 @@ import {
   dragPointer,
   requiredBox,
   selectSquawkColor,
+  selectStrokeWidth,
+  selectTextSize,
 } from '../e2e/browser-helpers';
 import {
   extensionIdFromWorker,
@@ -168,7 +170,7 @@ export async function generateDemoGif(): Promise<void> {
         .getByRole('button', { name: 'Rectangle', exact: true })
         .click();
       await selectSquawkColor(page, '#e03131');
-      await page.getByRole('button', { name: 'Stroke width 6' }).click();
+      await selectStrokeWidth(page, 6);
       const issue = await requiredBox(page.locator('#issue-42'));
       await dragPointer(page, {
         constraint: 'free',
@@ -188,7 +190,7 @@ export async function generateDemoGif(): Promise<void> {
       await fill.click();
       await expect(fill).toHaveAttribute('aria-pressed', 'true');
       await selectSquawkColor(page, '#f08c00');
-      await page.getByRole('button', { name: 'Stroke width 4' }).click();
+      await selectStrokeWidth(page, 4);
       const squareStart = {
         x: issue.x + issue.width - 92,
         y: issue.y + 18,
@@ -275,7 +277,7 @@ export async function generateDemoGif(): Promise<void> {
 
       await page.getByRole('button', { name: 'Text', exact: true }).click();
       await selectSquawkColor(page, '#e03131');
-      await page.getByRole('button', { name: 'Text size L' }).click();
+      await selectTextSize(page, 'L');
       await dragPointer(page, {
         constraint: 'free',
         start: { x: issue.x + 18, y: issue.y + issue.height + 26 },
@@ -303,6 +305,36 @@ export async function generateDemoGif(): Promise<void> {
         'svg.overlay text.annotation[data-phase="committed"][data-kind="label"]',
       );
       await expect(label).toHaveText('button#merge-button');
+      frames.push(await captureDemoFrame(page, 1200));
+
+      await page
+        .getByRole('button', { name: 'Font inspector', exact: true })
+        .click();
+      const issueHeading = page.locator('#issue-42 h2');
+      const heading = await requiredBox(issueHeading);
+      const headingCenter = {
+        x: heading.x + heading.width / 2,
+        y: heading.y + heading.height / 2,
+      };
+      await page.mouse.move(headingCenter.x, headingCenter.y);
+      const fontHighlight = host.locator(
+        'svg.overlay rect.font-highlight[data-phase="font-highlight"]',
+      );
+      await expect(fontHighlight).toHaveCount(1);
+      frames.push(await captureDemoFrame(page, 700));
+
+      await page.mouse.click(headingCenter.x, headingCenter.y);
+      const fontAnnotation = host.locator(
+        'svg.overlay g.annotation[data-phase="committed"][data-kind="font"]',
+      );
+      await expect(fontAnnotation).toHaveAttribute('data-font-size', '20px');
+      await expect(
+        fontAnnotation.locator('.font-label-background'),
+      ).toHaveAttribute('fill', '#000000');
+      await expect(fontAnnotation.locator('.font-label-text')).toHaveAttribute(
+        'fill',
+        '#ffffff',
+      );
       frames.push(await captureDemoFrame(page, 1200));
 
       await page.getByRole('button', { name: 'Camera', exact: true }).click();

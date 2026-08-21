@@ -1,7 +1,9 @@
 import { documentRectFromViewport } from '../../src/core/geometry';
 import {
+  FontTargetSchema,
   PickerTargetSchema,
   ViewportRectSchema,
+  type FontTargetSelection,
   type PickerTargetSelection,
   type ViewportPoint,
 } from '../../src/core/model';
@@ -34,33 +36,53 @@ function resolveSvelteLoc(
 
 export type ElementPickerView = Readonly<{
   targetAt: (point: ViewportPoint) => PickerTargetSelection;
+  fontTargetAt: (point: ViewportPoint) => FontTargetSelection;
 }>;
+
+type PickedElement = Readonly<{
+  element: Element;
+  rect: Readonly<{ x: number; y: number; w: number; h: number }>;
+}>;
+
+function pickedElementAt(
+  point: ViewportPoint,
+  host: HTMLDivElement,
+): PickedElement | undefined {
+  for (const element of document.elementsFromPoint(point.x, point.y)) {
+    if (element === host || host.shadowRoot?.contains(element) === true) {
+      continue;
+    }
+    const bounds = element.getBoundingClientRect();
+    const viewportRect = ViewportRectSchema.parse({
+      x: bounds.x,
+      y: bounds.y,
+      w: bounds.width,
+      h: bounds.height,
+    });
+    if (viewportRect.w <= 0 || viewportRect.h <= 0) {
+      continue;
+    }
+    return {
+      element,
+      rect: documentRectFromViewport(viewportRect, {
+        x: window.scrollX,
+        y: window.scrollY,
+      }),
+    };
+  }
+  return undefined;
+}
 
 export function createElementPicker(host: HTMLDivElement): ElementPickerView {
   return {
     targetAt(point) {
-      for (const element of document.elementsFromPoint(point.x, point.y)) {
-        if (element === host || host.shadowRoot?.contains(element) === true) {
-          continue;
-        }
+      const picked = pickedElementAt(point, host);
+      if (picked !== undefined) {
+        const { element, rect } = picked;
         const facts = SelectorElementFactsSchema.parse({
           tagName: element.localName,
           id: element.id,
           classNames: Array.from(element.classList),
-        });
-        const bounds = element.getBoundingClientRect();
-        const viewportRect = ViewportRectSchema.parse({
-          x: bounds.x,
-          y: bounds.y,
-          w: bounds.width,
-          h: bounds.height,
-        });
-        if (viewportRect.w <= 0 || viewportRect.h <= 0) {
-          continue;
-        }
-        const rect = documentRectFromViewport(viewportRect, {
-          x: window.scrollX,
-          y: window.scrollY,
         });
         const svelteLoc = resolveSvelteLoc(element, host);
         return {
@@ -73,6 +95,21 @@ export function createElementPicker(host: HTMLDivElement): ElementPickerView {
         };
       }
       return { kind: 'none' };
+    },
+    fontTargetAt(point) {
+      const picked = pickedElementAt(point, host);
+      if (picked === undefined) {
+        return { kind: 'none' };
+      }
+      const computed = getComputedStyle(picked.element);
+      const target = FontTargetSchema.safeParse({
+        ...picked.rect,
+        fontSize: computed.fontSize,
+        fontFamily: computed.fontFamily,
+      });
+      return target.success
+        ? { kind: 'element', target: target.data }
+        : { kind: 'none' };
     },
   };
 }

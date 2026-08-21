@@ -602,18 +602,20 @@ test('selects, moves, undoes, cancels, and captures every Selection target hones
   const toolButtons = toolbar.getByRole('button');
   expect(
     await toolButtons.evaluateAll((buttons) =>
-      buttons.slice(0, 11).map((button) => button.getAttribute('aria-label')),
+      buttons.slice(0, 13).map((button) => button.getAttribute('aria-label')),
     ),
   ).toEqual([
     'Drag Squawk palette',
     'Interact',
     'Select',
     'Rectangle',
+    'Ruler',
     'Ellipse',
     'Arrow',
     'Pen',
     'Text',
     'Element picker',
+    'Font inspector',
     'Eyedropper',
     'Eraser',
   ]);

@@ -18,6 +18,9 @@ import type {
   ColorSampleCommitInput,
   EraserTarget,
   FillStyle,
+  FontCommitInput,
+  FontTarget,
+  FontTargetSelection,
   GesturePointerMove,
   GesturePointerStart,
   MovePointerMove,
@@ -67,6 +70,8 @@ export function activeTool(state: SessionState): Tool {
       return 'select';
     case 'rect-armed':
       return 'rect';
+    case 'ruler-armed':
+      return 'ruler';
     case 'ellipse-armed':
       return 'ellipse';
     case 'arrow-armed':
@@ -80,6 +85,9 @@ export function activeTool(state: SessionState): Tool {
     case 'picker-armed':
     case 'picker-hovering':
       return 'picker';
+    case 'font-armed':
+    case 'font-hovering':
+      return 'font';
     case 'eyedropper-armed':
       return 'eyedropper';
     case 'eraser-armed':
@@ -100,6 +108,7 @@ export function overlayCursor(state: SessionState): ToolCursor {
     case 'select-dragging':
       return 'grabbing';
     case 'rect-armed':
+    case 'ruler-armed':
     case 'ellipse-armed':
     case 'arrow-armed':
     case 'pen-armed':
@@ -112,6 +121,8 @@ export function overlayCursor(state: SessionState): ToolCursor {
       return 'text';
     case 'picker-armed':
     case 'picker-hovering':
+    case 'font-armed':
+    case 'font-hovering':
       return 'cell';
     case 'eraser-armed':
     case 'eraser-hovering':
@@ -127,6 +138,8 @@ function armedToolState(tool: Tool): ToolState {
       return { kind: 'select-armed' };
     case 'rect':
       return { kind: 'rect-armed' };
+    case 'ruler':
+      return { kind: 'ruler-armed' };
     case 'ellipse':
       return { kind: 'ellipse-armed' };
     case 'arrow':
@@ -137,6 +150,8 @@ function armedToolState(tool: Tool): ToolState {
       return { kind: 'text-armed' };
     case 'picker':
       return { kind: 'picker-armed' };
+    case 'font':
+      return { kind: 'font-armed' };
     case 'eyedropper':
       return { kind: 'eyedropper-armed' };
     case 'eraser':
@@ -491,6 +506,22 @@ export function beginGesture(
           },
         },
       };
+    case 'ruler-armed':
+      return {
+        ...state,
+        tool: {
+          kind: 'drawing',
+          draft: {
+            kind: 'ruler',
+            pointerId: input.pointerId,
+            annotationId: input.annotationId,
+            selectionTargetId: input.selectionTargetId,
+            origin: input.point,
+            current: input.point,
+            constraint: 'free',
+          },
+        },
+      };
     case 'ellipse-armed':
       return {
         ...state,
@@ -549,6 +580,8 @@ export function beginGesture(
     case 'text-editing':
     case 'picker-armed':
     case 'picker-hovering':
+    case 'font-armed':
+    case 'font-hovering':
     case 'eyedropper-armed':
     case 'eraser-armed':
     case 'eraser-hovering':
@@ -571,6 +604,7 @@ export function moveGesture(
   const { draft } = state.tool;
   switch (draft.kind) {
     case 'rect':
+    case 'ruler':
     case 'ellipse':
       return {
         ...state,
@@ -615,6 +649,8 @@ function armedToolStateForDraft(draft: ShapeDraft): ToolState {
   switch (draft.kind) {
     case 'rect':
       return { kind: 'rect-armed' };
+    case 'ruler':
+      return { kind: 'ruler-armed' };
     case 'ellipse':
       return { kind: 'ellipse-armed' };
     case 'arrow':
@@ -672,6 +708,22 @@ export function commitGesture(
         strokeWidth: draft.strokeWidth,
         strokeStyle: draft.strokeStyle,
         fillStyle: draft.fillStyle,
+      });
+    }
+    case 'ruler': {
+      const geometry = rectGeometryFromDrag(
+        draft.origin,
+        draft.current,
+        draft.constraint,
+      );
+      if (geometry.w === 0 || geometry.h === 0) {
+        return discardDraft(state, draft);
+      }
+      return commitAnnotation(state, draft, {
+        id: draft.annotationId,
+        selectionTargetId: draft.selectionTargetId,
+        kind: 'ruler',
+        ...geometry,
       });
     }
     case 'ellipse': {
@@ -820,6 +872,63 @@ export function commitPickerTarget(
     tool: { kind: 'picker-armed' },
     annotations: [...state.annotations, ...annotations],
     history: [...state.history, { type: 'add', annotations }],
+  };
+}
+
+function fontTargetsEqual(left: FontTarget, right: FontTarget): boolean {
+  return (
+    left.x === right.x &&
+    left.y === right.y &&
+    left.w === right.w &&
+    left.h === right.h &&
+    left.fontSize === right.fontSize &&
+    left.fontFamily === right.fontFamily
+  );
+}
+
+export function setFontTarget(
+  state: SessionState,
+  selection: FontTargetSelection,
+): SessionState {
+  if (state.tool.kind !== 'font-armed' && state.tool.kind !== 'font-hovering') {
+    return state;
+  }
+  if (selection.kind === 'none') {
+    if (state.tool.kind === 'font-armed') {
+      return state;
+    }
+    return { ...state, tool: { kind: 'font-armed' } };
+  }
+  if (
+    state.tool.kind === 'font-hovering' &&
+    fontTargetsEqual(state.tool.target, selection.target)
+  ) {
+    return state;
+  }
+  return {
+    ...state,
+    tool: { kind: 'font-hovering', target: selection.target },
+  };
+}
+
+export function commitFontTarget(
+  state: SessionState,
+  input: FontCommitInput,
+): SessionState {
+  if (state.tool.kind !== 'font-hovering') {
+    return state;
+  }
+  const annotation: Annotation = {
+    id: input.annotationId,
+    selectionTargetId: input.selectionTargetId,
+    kind: 'font',
+    ...state.tool.target,
+  };
+  return {
+    ...state,
+    tool: { kind: 'font-armed' },
+    annotations: [...state.annotations, annotation],
+    history: [...state.history, { type: 'add', annotations: [annotation] }],
   };
 }
 
@@ -999,6 +1108,8 @@ function clearedTool(tool: ToolState): ToolState {
       return { kind: 'select-armed' };
     case 'eraser-hovering':
       return { kind: 'eraser-armed' };
+    case 'font-hovering':
+      return { kind: 'font-armed' };
     default:
       return tool;
   }
@@ -1054,12 +1165,15 @@ export function escapeSession(state: SessionState): SessionEscapeOutcome {
       };
     case 'select-armed':
     case 'rect-armed':
+    case 'ruler-armed':
     case 'ellipse-armed':
     case 'arrow-armed':
     case 'pen-armed':
     case 'text-armed':
     case 'picker-armed':
     case 'picker-hovering':
+    case 'font-armed':
+    case 'font-hovering':
     case 'eyedropper-armed':
     case 'eraser-armed':
     case 'eraser-hovering':
@@ -1159,6 +1273,15 @@ export function overlayItems(state: SessionState): readonly OverlayItem[] {
       },
     ];
   }
+  if (state.tool.kind === 'font-hovering') {
+    return [
+      ...committed,
+      {
+        phase: 'font-highlight',
+        target: state.tool.target,
+      },
+    ];
+  }
   if (state.tool.kind !== 'drawing') {
     return committed;
   }
@@ -1184,6 +1307,25 @@ export function overlayItems(state: SessionState): readonly OverlayItem[] {
             strokeWidth: draft.strokeWidth,
             strokeStyle: draft.strokeStyle,
             fillStyle: draft.fillStyle,
+          },
+        },
+      ];
+    }
+    case 'ruler': {
+      const geometry = rectGeometryFromDrag(
+        draft.origin,
+        draft.current,
+        draft.constraint,
+      );
+      return [
+        ...committed,
+        {
+          phase: 'preview',
+          opacity: 1,
+          annotation: {
+            id: draft.annotationId,
+            kind: 'ruler-preview',
+            ...geometry,
           },
         },
       ];

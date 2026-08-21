@@ -14,16 +14,18 @@ Squawk is a general-purpose Chrome extension that lays a transparent markup laye
 
 ## What it does
 
-Squawk provides ten tools without changing the page underneath:
+Squawk provides twelve tools without changing the page underneath:
 
 - **Interact** — use the page normally while annotations remain visible.
 - **Select** — select and drag one annotation. A box and label created by the Element picker move together, and every move can be undone.
 - **Rectangle** — draw a rectangle or square, optionally with a fully opaque fill.
+- **Ruler** — measure a rectangle or square and keep its width and height visible in the capture.
 - **Circle** — circle an area, optionally with a fully opaque fill.
 - **Arrow** — point from one place to another.
 - **Pen** — draw a freehand stroke.
 - **Text** — drag out a bounded text box; authored text wraps to its fixed width and grows downward when it needs more lines.
 - **Element picker** — snap a box and selector label to a DOM element.
+- **Font inspector.** Click an element to label its computed font size and font family.
 - **Eyedropper.** Click a visible page pixel to add its hex color beside a circled marker.
 - **Eraser** — remove an annotation, with undo available.
 
@@ -49,7 +51,7 @@ Squawk has no host permissions and registers no always-on content script. Its pa
 
 1. Open the page you want to review.
 2. Select the Squawk extension action.
-3. Choose a drawing tool and annotate the page. Use **Fill shapes** for opaque rectangles, squares, or circles.
+3. Choose a drawing tool and annotate the page. Use **Ruler** for a measured area, or **Fill shapes** for opaque rectangles, squares, or circles.
 4. Choose **Eyedropper** to label a page pixel with its hex color.
 5. Choose **Select** to reposition an annotation, or **Eraser** to remove one.
 6. Select **Camera** to copy the annotated viewport or download the PNG fallback.

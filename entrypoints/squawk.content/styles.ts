@@ -37,6 +37,7 @@ export const SQUAWK_STYLES = `
 
   .annotation,
   .picker-highlight,
+  .font-highlight,
   .selection-affordance,
   .annotation-hit-target,
   .text-eraser-hit-target {

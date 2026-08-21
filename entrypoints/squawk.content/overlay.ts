@@ -10,6 +10,7 @@ import type {
   DerivedTextLayout,
   DocumentPoint,
   FillStyle,
+  FontAnnotation,
   LabelAnnotation,
   OverlayItem,
   PreviewAnnotation,
@@ -53,6 +54,18 @@ const COLOR_SAMPLE_RADIUS = 8;
 const COLOR_SAMPLE_LABEL_OFFSET = 14;
 const COLOR_SAMPLE_LABEL_WIDTH = 64;
 const COLOR_SAMPLE_LABEL_HEIGHT = 20;
+const RULER_FILL_COLOR = '#ffd43b';
+const RULER_STROKE_COLOR = '#868e96';
+const RULER_LABEL_HEIGHT = 28;
+const RULER_LABEL_GAP = 6;
+const RULER_LABEL_PADDING_X = 10;
+const RULER_LABEL_CHARACTER_WIDTH = 7.8;
+const FONT_LABEL_BACKGROUND = '#000000';
+const FONT_LABEL_TEXT = '#ffffff';
+const FONT_LABEL_HEIGHT = 28;
+const FONT_LABEL_GAP = 4;
+const FONT_LABEL_PADDING_X = 10;
+const FONT_LABEL_CHARACTER_WIDTH = 7.5;
 
 type CommittedOverlayItem = Extract<OverlayItem, { phase: 'committed' }>;
 type MovePreviewOverlayItem = Extract<OverlayItem, { phase: 'move-preview' }>;
@@ -61,6 +74,10 @@ type PreviewOverlayItem = Extract<OverlayItem, { phase: 'preview' }>;
 type PickerHighlightOverlayItem = Extract<
   OverlayItem,
   { phase: 'picker-highlight' }
+>;
+type FontHighlightOverlayItem = Extract<
+  OverlayItem,
+  { phase: 'font-highlight' }
 >;
 type TextBoxPreviewAnnotation = Extract<
   PreviewAnnotation,
@@ -81,6 +98,13 @@ type Bounds = Readonly<{
   width: number;
   height: number;
 }>;
+type RulerGeometry = Readonly<{
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}>;
+type RulerMeasurement = 'width' | 'height';
 
 function applyRootAttributes(
   root: SVGElement,
@@ -450,6 +474,172 @@ function appendTextAnnotation(
   );
 }
 
+function rulerLabelWidth(axis: 'w' | 'h', value: number): number {
+  const label = `(${axis}) ${String(Math.round(value))}px`;
+  return label.length * RULER_LABEL_CHARACTER_WIDTH + RULER_LABEL_PADDING_X * 2;
+}
+
+function renderRulerLabel(
+  measurement: RulerMeasurement,
+  axis: 'w' | 'h',
+  value: number,
+  x: number,
+  y: number,
+): SVGGElement {
+  const group = document.createElementNS(SVG_NAMESPACE, 'g');
+  group.classList.add('ruler-label');
+  group.dataset.measurement = measurement;
+
+  const background = document.createElementNS(SVG_NAMESPACE, 'rect');
+  background.classList.add('ruler-label-background');
+  background.setAttribute('x', String(x));
+  background.setAttribute('y', String(y));
+  background.setAttribute('width', String(rulerLabelWidth(axis, value)));
+  background.setAttribute('height', String(RULER_LABEL_HEIGHT));
+  background.setAttribute('fill', '#ffffff');
+  background.setAttribute('stroke', '#ced4da');
+  background.setAttribute('stroke-width', '1');
+
+  const text = document.createElementNS(SVG_NAMESPACE, 'text');
+  text.classList.add('ruler-label-text');
+  text.setAttribute('x', String(x + RULER_LABEL_PADDING_X));
+  text.setAttribute('y', String(y + RULER_LABEL_HEIGHT / 2));
+  text.setAttribute('dominant-baseline', 'middle');
+  text.setAttribute('font-family', 'ui-monospace, monospace');
+  text.setAttribute('font-size', '12');
+
+  const axisText = document.createElementNS(SVG_NAMESPACE, 'tspan');
+  axisText.setAttribute('fill', '#495057');
+  axisText.setAttribute('font-weight', '700');
+  axisText.textContent = `(${axis})`;
+
+  const valueText = document.createElementNS(SVG_NAMESPACE, 'tspan');
+  valueText.setAttribute('fill', '#212529');
+  valueText.textContent = ` ${String(Math.round(value))}px`;
+
+  text.append(axisText, valueText);
+  group.append(background, text);
+  return group;
+}
+
+function renderRulerVisual(geometry: RulerGeometry): readonly SVGElement[] {
+  const rectangle = document.createElementNS(SVG_NAMESPACE, 'rect');
+  rectangle.classList.add('ruler-rectangle');
+  rectangle.setAttribute('x', String(geometry.x));
+  rectangle.setAttribute('y', String(geometry.y));
+  rectangle.setAttribute('width', String(geometry.w));
+  rectangle.setAttribute('height', String(geometry.h));
+  rectangle.setAttribute('fill', RULER_FILL_COLOR);
+  rectangle.setAttribute('fill-opacity', '0.16');
+  rectangle.setAttribute('stroke', RULER_STROKE_COLOR);
+  rectangle.setAttribute('stroke-width', '1');
+
+  const widthLabelWidth = rulerLabelWidth('w', geometry.w);
+  const heightLabelWidth = rulerLabelWidth('h', geometry.h);
+  const top =
+    geometry.y >= RULER_LABEL_HEIGHT + RULER_LABEL_GAP
+      ? geometry.y - RULER_LABEL_HEIGHT - RULER_LABEL_GAP
+      : geometry.y + RULER_LABEL_GAP;
+  const left =
+    geometry.x >= heightLabelWidth + RULER_LABEL_GAP
+      ? geometry.x - heightLabelWidth - RULER_LABEL_GAP
+      : geometry.x + RULER_LABEL_GAP;
+
+  return [
+    rectangle,
+    renderRulerLabel(
+      'width',
+      'w',
+      geometry.w,
+      geometry.x + geometry.w / 2 - widthLabelWidth / 2,
+      top,
+    ),
+    renderRulerLabel(
+      'height',
+      'h',
+      geometry.h,
+      left,
+      geometry.y + geometry.h / 2 - RULER_LABEL_HEIGHT / 2,
+    ),
+  ];
+}
+
+function fontLabelText(annotation: FontAnnotation): string {
+  return `${annotation.fontSize} · ${annotation.fontFamily}`;
+}
+
+function renderFontAnnotation(
+  item: AnnotationOverlayItem,
+  annotation: FontAnnotation,
+): readonly SVGElement[] {
+  const group = document.createElementNS(SVG_NAMESPACE, 'g');
+  applyRootAttributes(group, item);
+  group.dataset.fontSize = annotation.fontSize;
+  group.dataset.fontFamily = annotation.fontFamily;
+
+  const outline = document.createElementNS(SVG_NAMESPACE, 'rect');
+  outline.classList.add('font-annotation-outline');
+  outline.setAttribute('x', String(annotation.x));
+  outline.setAttribute('y', String(annotation.y));
+  outline.setAttribute('width', String(annotation.w));
+  outline.setAttribute('height', String(annotation.h));
+  outline.setAttribute('fill', FONT_LABEL_BACKGROUND);
+  outline.setAttribute('fill-opacity', '0.05');
+  outline.setAttribute('stroke', FONT_LABEL_BACKGROUND);
+  outline.setAttribute('stroke-width', '2');
+
+  const value = fontLabelText(annotation);
+  const labelWidth = Math.max(
+    96,
+    value.length * FONT_LABEL_CHARACTER_WIDTH + FONT_LABEL_PADDING_X * 2,
+  );
+  const labelY =
+    annotation.y >= FONT_LABEL_HEIGHT + FONT_LABEL_GAP
+      ? annotation.y - FONT_LABEL_HEIGHT - FONT_LABEL_GAP
+      : annotation.y + annotation.h + FONT_LABEL_GAP;
+  const background = document.createElementNS(SVG_NAMESPACE, 'rect');
+  background.classList.add('font-label-background');
+  background.setAttribute('x', String(annotation.x));
+  background.setAttribute('y', String(labelY));
+  background.setAttribute('width', String(labelWidth));
+  background.setAttribute('height', String(FONT_LABEL_HEIGHT));
+  background.setAttribute('rx', '4');
+  background.setAttribute('fill', FONT_LABEL_BACKGROUND);
+
+  const text = document.createElementNS(SVG_NAMESPACE, 'text');
+  text.classList.add('font-label-text');
+  text.setAttribute('x', String(annotation.x + FONT_LABEL_PADDING_X));
+  text.setAttribute('y', String(labelY + FONT_LABEL_HEIGHT / 2));
+  text.setAttribute('dominant-baseline', 'middle');
+  text.setAttribute('fill', FONT_LABEL_TEXT);
+  text.setAttribute('font-family', 'ui-monospace, monospace');
+  text.setAttribute('font-size', '12');
+  text.setAttribute('font-weight', '600');
+  text.textContent = value;
+  group.append(outline, background, text);
+
+  const hitTarget = document.createElementNS(SVG_NAMESPACE, 'rect');
+  hitTarget.setAttribute('x', String(annotation.x));
+  hitTarget.setAttribute('y', String(annotation.y));
+  hitTarget.setAttribute('width', String(annotation.w));
+  hitTarget.setAttribute('height', String(annotation.h));
+  applyFilledHitTargetAttributes(
+    hitTarget,
+    annotation.id,
+    annotation.selectionTargetId,
+  );
+  if (item.selectionAffordance === 'none') {
+    return [group, hitTarget];
+  }
+  const affordance = document.createElementNS(SVG_NAMESPACE, 'rect');
+  affordance.setAttribute('x', String(annotation.x));
+  affordance.setAttribute('y', String(annotation.y));
+  affordance.setAttribute('width', String(annotation.w));
+  affordance.setAttribute('height', String(annotation.h));
+  applySelectionStrokeAttributes(affordance, 2);
+  return [affordance, group, hitTarget];
+}
+
 function renderAnnotationItem(
   item: AnnotationOverlayItem,
 ): readonly SVGElement[] {
@@ -515,6 +705,35 @@ function renderAnnotationItem(
       applySelectionStrokeAttributes(affordance, item.annotation.strokeWidth);
       return [affordance, rectangle, ...hitTargets];
     }
+    case 'ruler': {
+      const group = document.createElementNS(SVG_NAMESPACE, 'g');
+      applyRootAttributes(group, item);
+      group.append(...renderRulerVisual(item.annotation));
+
+      const hitTarget = document.createElementNS(SVG_NAMESPACE, 'rect');
+      hitTarget.setAttribute('x', String(item.annotation.x));
+      hitTarget.setAttribute('y', String(item.annotation.y));
+      hitTarget.setAttribute('width', String(item.annotation.w));
+      hitTarget.setAttribute('height', String(item.annotation.h));
+      applyFilledHitTargetAttributes(
+        hitTarget,
+        item.annotation.id,
+        item.annotation.selectionTargetId,
+      );
+
+      if (item.selectionAffordance === 'none') {
+        return [group, hitTarget];
+      }
+      const affordance = document.createElementNS(SVG_NAMESPACE, 'rect');
+      affordance.setAttribute('x', String(item.annotation.x));
+      affordance.setAttribute('y', String(item.annotation.y));
+      affordance.setAttribute('width', String(item.annotation.w));
+      affordance.setAttribute('height', String(item.annotation.h));
+      applySelectionStrokeAttributes(affordance, 2);
+      return [affordance, group, hitTarget];
+    }
+    case 'font':
+      return renderFontAnnotation(item, item.annotation);
     case 'ellipse': {
       const ellipse = document.createElementNS(SVG_NAMESPACE, 'ellipse');
       applyRootAttributes(ellipse, item);
@@ -809,6 +1028,12 @@ function renderPreviewItem(
       );
       return [rectangle];
     }
+    case 'ruler-preview': {
+      const group = document.createElementNS(SVG_NAMESPACE, 'g');
+      applyRootAttributes(group, item);
+      group.append(...renderRulerVisual(item.annotation));
+      return [group];
+    }
     case 'ellipse-preview': {
       const ellipse = document.createElementNS(SVG_NAMESPACE, 'ellipse');
       applyRootAttributes(ellipse, item);
@@ -932,6 +1157,25 @@ function appendPickerHighlight(
   );
 }
 
+function appendFontHighlight(
+  root: SVGSVGElement,
+  item: FontHighlightOverlayItem,
+): void {
+  const rectangle = document.createElementNS(SVG_NAMESPACE, 'rect');
+  rectangle.classList.add('font-highlight');
+  rectangle.dataset.phase = 'font-highlight';
+  rectangle.dataset.kind = 'font-highlight';
+  rectangle.setAttribute('x', String(item.target.x));
+  rectangle.setAttribute('y', String(item.target.y));
+  rectangle.setAttribute('width', String(item.target.w));
+  rectangle.setAttribute('height', String(item.target.h));
+  rectangle.setAttribute('fill', FONT_LABEL_BACKGROUND);
+  rectangle.setAttribute('fill-opacity', '0.05');
+  rectangle.setAttribute('stroke', FONT_LABEL_BACKGROUND);
+  rectangle.setAttribute('stroke-width', '2');
+  root.append(rectangle);
+}
+
 function applyChromeVisibility(
   element: SVGSVGElement,
   visibility: SquawkChromeVisibility,
@@ -998,7 +1242,7 @@ export function createOverlay(
           ? 'transparent'
           : tool === 'eraser'
             ? 'erasing'
-            : tool === 'picker'
+            : tool === 'picker' || tool === 'font'
               ? 'picking'
               : tool === 'select'
                 ? 'selecting'
@@ -1022,6 +1266,9 @@ export function createOverlay(
           break;
         case 'picker-highlight':
           appendPickerHighlight(element, item);
+          break;
+        case 'font-highlight':
+          appendFontHighlight(element, item);
           break;
       }
     }
